@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-i18n-title="app.title">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="硼核磁预测系统">
+    <title>{% block title %}11B-NMR 化学位移预测系统{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <!-- 注意：Ketcher 库通过 iframe 加载，无需在这里加载 -->
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-content">
+                <h1 class="logo" data-i18n="app.title">11B-NMR 化学位移预测系统</h1>
+                <nav class="nav">
+                    <a href="/" class="nav-link {% if request.path == '/' %}active{% endif %}" data-i18n="nav.predict">预测</a>
+                    <a href="/history" class="nav-link {% if request.path == '/history' %}active{% endif %}" data-i18n="nav.history">历史记录</a>
+                    <!-- Language switcher will be added here by JavaScript -->
+                </nav>
+            </div>
+        </header>
+
+        <main class="main-content">
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer class="footer">
+            <p data-i18n="app.copyright">&copy; 2025 硼核磁预测系统 | 基于 GNN 和 5 折交叉验证集成模型</p>
+        </footer>
+    </div>
+
+    <!-- Load i18n before other scripts -->
+    <script src="{{ url_for('static', filename='i18n/i18n.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/language-switcher.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <!-- 注意：Ketcher 库通过 iframe (/static/lib/ketcher/ketcher-standalone/) 加载 -->
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

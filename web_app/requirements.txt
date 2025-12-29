@@ -1,0 +1,24 @@
+# Web 框架
+Flask==3.0.0
+Flask-CORS==4.0.0
+
+# 深度学习
+torch==2.1.0
+torch-geometric==2.4.0
+
+# 化学信息学
+rdkit==2023.9.1
+
+# 数据处理
+numpy==1.24.3
+pandas==2.0.3
+
+# 可视化
+Pillow==10.0.0
+matplotlib==3.7.2
+
+# 数据库
+# SQLite3 is built-in to Python
+
+# 其他工具
+python-dotenv==1.0.0
