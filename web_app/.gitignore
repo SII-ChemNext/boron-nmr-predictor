@@ -1,0 +1,24 @@
+# Model weights (large binary files)
+models/*.pth
+models/*.pkl
+
+# Generated prediction images
+static/img/prediction_*.png
+
+# Database (runtime)
+database/predictions.db
+
+# Virtual environment
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# OS
+.DS_Store
+
+# IDE
+.claude/
+.sii/

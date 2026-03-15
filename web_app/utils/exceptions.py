@@ -1,21 +1,21 @@
-"""自定义异常类"""
+"""Custom exception classes"""
 
 
 class InvalidSMILESError(Exception):
-    """无效的 SMILES 异常"""
+    """Invalid SMILES exception"""
     pass
 
 
 class PredictionError(Exception):
-    """预测过程中的异常"""
+    """Exception raised during prediction"""
     pass
 
 
 class DatabaseError(Exception):
-    """数据库操作异常"""
+    """Database operation exception"""
     pass
 
 
 class ValidationError(Exception):
-    """输入验证异常"""
+    """Input validation exception"""
     pass

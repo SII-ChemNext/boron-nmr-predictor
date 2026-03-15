@@ -1,202 +1,145 @@
-# Boron NMR Chemical Shift Predictor
+# An Interpretable Hybrid AI Framework for Decoding Solvent-Dependent <sup>11</sup>B NMR Chemical Shifts
 
-English | [简体中文](README_CN.md)
+This repository provides the code and data for predicting <sup>11</sup>B NMR chemical shifts using classical machine learning and graph neural networks. The framework combines a Graph Transformer with virtual node, learnable solvent embeddings, and SHAP-guided ML feature fusion, trained on a dataset of **5,490** boron-containing compounds across **10 deuterated solvents**. A Flask web application with Ketcher molecule editor is included for interactive prediction.
 
-<sup>11</sup>B-NMR Chemical Shift Prediction Web Application based on Graph Neural Networks
+<p align="center">
+  <img src="web_app/web_GUI.png" alt="Web GUI Screenshot" width="900">
+</p>
 
-## Interface Preview
-
-![Web Interface](docs/images/web-interface.png)
-
-*Main interface showing the Ketcher molecular editor (left) and prediction results panel (right)*
-
-> **Note**: If you don't see the image above, please add your screenshot to `docs/images/web-interface.png`
-
-## About
-
-This is a web application for predicting <sup>11</sup>B-NMR chemical shifts using deep learning. The system employs a Graph Neural Network (GNN) architecture combined with a 5-fold cross-validation ensemble model to accurately predict chemical shifts of boron-containing molecules in various deuterated solvents.
-
-### Key Features
-
-**Molecular Editor (Left Panel)**
-- 🎨 Ketcher visual molecular editor
-- ⚛️ Support for complex molecular structures
-- 🔧 Complete chemical drawing tools
-
-**Prediction Features (Right Panel)**
-- 🔬 10 deuterated solvents available
-- 🤖 Ensemble prediction with 5 models
-- 📊 Real-time results display
-- 💾 Automatic history saving
-
-**Results Display**
-- 📋 Prediction table (atom index, element, ppm value)
-- 🖼️ Molecular structure image (boron atoms highlighted)
-- 📥 Multi-format download (CSV, JSON, PNG)
-
-## Tech Stack
-
-- **Backend**: Flask 3.0
-- **Deep Learning**: PyTorch 2.1 + PyTorch Geometric 2.4
-- **Cheminformatics**: RDKit 2023.9
-- **Frontend**: Vanilla JavaScript + Ketcher Molecular Editor
-- **Database**: SQLite3
-
-## Quick Start
-
-### Requirements
-
-- Python 3.8+
-- 4GB+ RAM (8GB recommended)
-- Modern browser (Chrome, Firefox, Safari, Edge)
-
-### Installation
-
-1. **Clone the repository**
-```bash
-git clone https://github.com/your-username/boron-nmr-predictor.git
-cd boron-nmr-predictor/web_app
-```
-
-2. **Create virtual environment**
-```bash
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
-# or
-venv\Scripts\activate  # Windows
-```
-
-3. **Install dependencies**
-```bash
-pip install -r requirements.txt
-```
-
-4. **Download model files**
-
-Model files (~500MB) are not included in the repository. Download from:
-
-- [Google Drive](https://drive.google.com/drive/folders/1HLirbH9JOf6HvgwUTIUETkpXG_U4fPYl?usp=sharing)
-
-Place the 5 model files in `web_app/models/` directory:
-```
-models/
-├── model_fold_1.pth
-├── model_fold_2.pth
-├── model_fold_3.pth
-├── model_fold_4.pth
-└── model_fold_5.pth
-```
-
-5. **Start the application**
-```bash
-python app.py
-```
-
-6. **Access the application**
-
-Open in browser: http://localhost:5000
-
-## Usage
-
-### Predicting Chemical Shifts
-
-1. Draw boron-containing molecule in the editor (or input SMILES directly)
-2. Select solvent type
-3. Click "Predict" button
-4. View prediction results and molecular structure
-5. Optional: Download results (CSV/JSON/PNG)
-
-### Supported Solvents
-
-| Solvent | Formula |
-|---------|---------|
-| CDCl3 | Deuterated Chloroform |
-| C6D6 | Deuterated Benzene |
-| DMSO-d6 | Deuterated DMSO |
-| Acetone-d6 | Deuterated Acetone |
-| CD3CN | Deuterated Acetonitrile |
-| CD3OD | Deuterated Methanol |
-| CD2Cl2 | Deuterated Dichloromethane |
-| THF-d8 | Deuterated THF |
-| Toluene-d8 | Deuterated Toluene |
-| D2O | Heavy Water |
+---
 
 ## Project Structure
 
 ```
-boron-nmr-predictor/
-├── README.md
+B11-NMR-Prediction/
+├── data/                       # Raw datasets
+│   ├── data_clean.csv          # Curated dataset (5,490 entries)
+│   ├── nmr_11b_bookdata.csv    # NMR data from textbooks
+│   └── nmr_11b_paperdata.csv   # NMR data from literature
+│
+├── classical_ml/               # Classical ML benchmarks (Chemia framework)
+│   ├── configs/                # 33 YAML configs (11 representations × 3 seeds)
+│   ├── data/                   # Single-ppm subset (5,217 entries)
+│   ├── results/                # Full comparison results
+│   ├── Morgan-RDKit_seed44_xgboost/  # Best model + SHAP analysis
+│   └── README.md
+│
+├── gnn/                        # Graph Neural Network models
+│   ├── graph_transformer/      # Best model: Graph Transformer + ML fusion
+│   ├── graph_transformer_no_ml/# Ablation: without ML features
+│   ├── gnn_comparison/         # Benchmark: GCN, GATv2, GINE, NNConv, PNA
+│   ├── gnn_comparison_no_ml/   # Benchmark: same architectures without ML
+│   ├── requirements.txt
+│   └── README.md
+│
+├── web_app/                    # Flask web GUI for interactive prediction
+│   ├── app.py                  # Flask application
+│   ├── core/                   # Model, features, predictor modules
+│   ├── database/               # SQLite database models
+│   ├── models/                 # Trained model weights (5-fold)
+│   ├── static/                 # CSS, JS, Ketcher molecule editor, i18n
+│   ├── templates/              # HTML templates (Jinja2)
+│   ├── utils/                  # Validators, exceptions
+│   ├── requirements.txt
+│   └── start.sh
+│
 ├── LICENSE
-├── .gitignore
-└── web_app/
-    ├── app.py                    # Flask main application
-    ├── config.py                 # Configuration file
-    ├── requirements.txt          # Python dependencies
-    ├── start.sh                  # Linux/Mac startup script
-    ├── start.bat                 # Windows startup script
-    ├── core/                     # Core prediction logic
-    │   ├── predictor.py         # Predictor class
-    │   ├── model.py             # GNN model architecture
-    │   └── features.py          # Feature extraction
-    ├── database/                 # Database operations
-    │   └── models.py
-    ├── utils/                    # Utility functions
-    │   ├── validators.py
-    │   └── exceptions.py
-    ├── templates/                # HTML templates
-    │   ├── base.html
-    │   ├── index.html
-    │   └── history.html
-    ├── static/                   # Static resources
-    │   ├── css/main.css
-    │   ├── js/
-    │   │   ├── main.js
-    │   │   ├── ketcher-integration.js
-    │   │   └── result-handler.js
-    │   └── img/                 # Generated molecular images
-    └── models/                   # Model files (download required)
-        └── model_fold_*.pth
+└── README.md                   # This file
 ```
 
-## FAQ
+---
 
-**Q: Model loading failed?**  
-A: Ensure all 5 model files are downloaded and placed in the correct location.
+## Dataset
 
-**Q: Ketcher editor not loading?**  
-A: The app will automatically fall back to SMILES input box. Functionality is not affected.
+The curated dataset (`data/data_clean.csv`) contains **5,490 entries** of boron-containing compounds with experimentally measured <sup>11</sup>B NMR chemical shifts, covering **10 deuterated solvents**.
 
-**Q: Prediction is slow?**  
-A: First prediction requires model loading (~3-5 seconds). Subsequent predictions are faster. GPU significantly accelerates prediction.
+| Column | Description |
+|---|---|
+| `Smiles` | SMILES of the boron-containing compound |
+| `solvent` | SMILES of the deuterated NMR solvent |
+| `B_count` | Number of boron atoms in the molecule |
+| `ppm_values` | <sup>11</sup>B NMR chemical shift (ppm); multiple values separated by commas |
 
-## Contributing
+**Supported solvents:** CDCl3, C6D6, DMSO-d6, Acetone-d6, CD3CN, CD3OD, CD2Cl2, THF-d8, Toluene-d8, D2O.
 
-Issues and Pull Requests are welcome!
+---
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+## Model Overview
+
+### Classical ML (XGBoost)
+
+11 molecular representations (Morgan, MACCS, RDKit descriptors, MolT5, UniMol, and their combinations) were benchmarked with 7 regression algorithms. The best combination is **Morgan + RDKit Descriptors with XGBoost**.
+
+See [`classical_ml/README.md`](classical_ml/README.md) for full results.
+
+### Graph Transformer (Best Model)
+
+A 3-layer Graph Transformer (TransformerConv) with:
+- **Virtual Node** mechanism for global message passing
+- **Learnable solvent embeddings** (10 solvents + unknown)
+- **SHAP Top-20 ML feature fusion** from the best XGBoost model
+- 5-fold cross-validation with ensemble prediction
+
+See [`gnn/README.md`](gnn/README.md) for architecture details and other GNN benchmarks.
+
+---
+
+## Quick Start
+
+### 1. Predict with the trained model (command line)
+
+```bash
+cd gnn/graph_transformer
+
+# Prepare dataset (one-time)
+python csv_to_pyg.py
+python build_dataset_v3.py
+
+# Edit MOLECULE_SMILES and SOLVENT_SMILES in the script, then run:
+python inference/predict.py
+```
+
+### 2. Launch the web GUI
+
+```bash
+cd web_app
+pip install -r requirements.txt
+python app.py
+```
+
+Then open the browser at `http://localhost:5000`. Draw a molecule with the built-in Ketcher editor or enter a SMILES string, select a solvent, and click **Predict**.
+
+### 3. Retrain models
+
+**Classical ML** (requires [Chemia](https://github.com/flyben97/Chemia)):
+
+```bash
+conda activate chemia
+python scripts/run_training_only.py classical_ml/configs/morgan_rdkit_seed44.yaml
+```
+
+**Graph Transformer**:
+
+```bash
+cd gnn/graph_transformer
+pip install -r ../requirements.txt
+python train_kfold_v3.py
+```
+
+---
+
+## Requirements
+
+- Python 3.10+
+- PyTorch 2.5+ (CUDA 12.1 recommended for GPU training)
+- PyTorch Geometric 2.7+
+- RDKit 2025+
+- See `gnn/requirements.txt` and `web_app/requirements.txt` for full dependency lists
+
+---
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the [MIT License](LICENSE).
 
-## Citation
-
-If you use this project in your research, please cite:
-
-```bibtex
-@software{boron_nmr_predictor,
-  title = {Boron NMR Chemical Shift Predictor},
-  author = {Your Name},
-  year = {2025},
-  url = {https://github.com/your-username/boron-nmr-predictor}
-}
-```
-
-## Contact
-
-- Project Homepage: https://github.com/your-username/boron-nmr-predictor
-- Issue Tracker: https://github.com/your-username/boron-nmr-predictor/issues
+This project is licensed for academic and research use. Please contact the authors for commercial inquiries.

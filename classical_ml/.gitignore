@@ -1,0 +1,14 @@
+# Large featurized data splits (regenerate by running Chemia with the provided configs)
+Morgan-RDKit_seed44_xgboost/data_splits/
+
+# SHAP output files
+Morgan-RDKit_seed44_xgboost/SHAP/outputs/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+
+# OS
+.DS_Store

@@ -1,81 +1,35 @@
 # Python
 __pycache__/
 *.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
 *.egg-info/
-.installed.cfg
-*.egg
+.eggs/
+
+# Large dataset / model files
+*.pt
+*.pth
+*.pkl
+
+# Optuna
+*.db
 
 # Virtual environments
 venv/
-env/
-ENV/
-env.bak/
-venv.bak/
+.venv/
 
-# IDEs
-.idea/
-.vscode/
-*.swp
-*.swo
-*~
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
-
-# Database files
-*.db
-*.sqlite
-*.sqlite3
-
-# Log files
-*.log
-
-# Environment variables
-.env
-.env.local
-
-# OS files
+# OS
 .DS_Store
 Thumbs.db
 
-# Model files (large binary files - download separately)
-*.pth
-*.pkl
-*.h5
-*.ckpt
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+.claude/
+.sii/
 
 # Generated images
-web_app/static/img/*.png
-web_app/static/img/*.jpg
+web_app/static/img/prediction_*.png
 
-# Data files
-*.csv
-*.json
-*.parquet
-
-# Backup directories
-*_backup/
-*_backup*/
-
-# Ketcher library (download separately)
-web_app/static/lib/ketcher/
+# Runtime database
+web_app/database/predictions.db

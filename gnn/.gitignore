@@ -1,0 +1,12 @@
+# Large dataset files
+**/*.pt
+
+# Model weights (optional: remove this line if you want to upload trained_models/)
+# trained_models/
+
+# Python cache
+**/__pycache__/
+**/*.pyc
+
+# Optuna database
+*.db

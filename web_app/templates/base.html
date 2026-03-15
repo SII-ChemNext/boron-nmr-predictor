@@ -1,22 +1,32 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-i18n-title="app.title">
+<html lang="en" data-i18n-title="app.title">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="硼核磁预测系统">
-    <title>{% block title %}11B-NMR 化学位移预测系统{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-    <!-- 注意：Ketcher 库通过 iframe 加载，无需在这里加载 -->
+    <meta name="description" content="11B NMR Chemical Shift Prediction System">
+    <script>
+    // Automatically detect proxy prefix for reverse proxy compatibility
+    (function() {
+        var path = window.location.pathname;
+        window.BASE_PATH = path.endsWith('/') ? path : path.substring(0, path.lastIndexOf('/') + 1);
+        var base = document.createElement('base');
+        base.href = window.BASE_PATH;
+        document.head.prepend(base);
+    })();
+    </script>
+    <title>{% block title %}11B NMR Chemical Shift Prediction System{% endblock %}</title>
+    <link rel="stylesheet" href="static/css/main.css">
+    <!-- Note: the Ketcher library is loaded via iframe, no need to include it here -->
     {% block extra_css %}{% endblock %}
 </head>
 <body>
     <div class="container">
         <header class="header">
             <div class="header-content">
-                <h1 class="logo" data-i18n="app.title">11B-NMR 化学位移预测系统</h1>
+                <h1 class="logo" data-i18n="app.title">11B NMR Chemical Shift Prediction System</h1>
                 <nav class="nav">
-                    <a href="/" class="nav-link {% if request.path == '/' %}active{% endif %}" data-i18n="nav.predict">预测</a>
-                    <a href="/history" class="nav-link {% if request.path == '/history' %}active{% endif %}" data-i18n="nav.history">历史记录</a>
+                    <a href="./" class="nav-link {% if request.path == '/' %}active{% endif %}" data-i18n="nav.predict">Predict</a>
+                    <a href="history" class="nav-link {% if request.path == '/history' %}active{% endif %}" data-i18n="nav.history">History</a>
                     <!-- Language switcher will be added here by JavaScript -->
                 </nav>
             </div>
@@ -27,15 +37,16 @@
         </main>
 
         <footer class="footer">
-            <p data-i18n="app.copyright">&copy; 2025 硼核磁预测系统 | 基于 GNN 和 5 折交叉验证集成模型</p>
+            <p>&copy; 2026 <sup>11</sup>B NMR Chemical Shift Prediction System</p>
+            <p style="font-size: 0.85em; margin-top: 4px; opacity: 0.85;">An Interpretable Hybrid AI Framework for Decoding Solvent-Dependent <sup>11</sup>B NMR Chemical Shifts</p>
         </footer>
     </div>
 
     <!-- Load i18n before other scripts -->
-    <script src="{{ url_for('static', filename='i18n/i18n.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/language-switcher.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-    <!-- 注意：Ketcher 库通过 iframe (/static/lib/ketcher/ketcher-standalone/) 加载 -->
+    <script src="static/i18n/i18n.js"></script>
+    <script src="static/js/language-switcher.js"></script>
+    <script src="static/js/main.js"></script>
+    <!-- Note: the Ketcher library is loaded via iframe (/static/lib/ketcher/ketcher-standalone/) -->
     {% block extra_js %}{% endblock %}
 </body>
 </html>

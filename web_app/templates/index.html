@@ -2,22 +2,22 @@
 
 {% block content %}
 <div class="page-container">
-    <!-- 左侧：分子编辑器和输入 -->
+    <!-- Left panel: molecule editor and input -->
     <section class="editor-panel">
-        <h2 data-i18n="editor.title">分子结构编辑</h2>
+        <h2 data-i18n="editor.title">Molecular Structure Editor</h2>
 
-        <!-- Ketcher 容器（使用 iframe 加载本地 Standalone） -->
+        <!-- Ketcher container (loaded via iframe as local standalone) -->
         <div id="ketcher-wrapper" class="ketcher-editor">
             <iframe
                 id="ketcher-iframe"
-                src="/ketcher"
+                src="ketcher"
                 style="width: 100%; height: 100%; border: none; border-radius: 4px; background: white;">
             </iframe>
         </div>
 
-        <!-- 溶剂选择 -->
+        <!-- Solvent selection -->
         <div class="form-group">
-            <label for="solvent-select" data-i18n="editor.selectSolvent">选择溶剂：</label>
+            <label for="solvent-select" data-i18n="editor.selectSolvent">Select Solvent:</label>
             <select id="solvent-select" class="form-control">
                 {% for solvent_name in solvents.keys() %}
                 <option value="{{ solvent_name }}">{{ solvent_name }}</option>
@@ -25,44 +25,44 @@
             </select>
         </div>
 
-        <!-- 操作按钮 -->
+        <!-- Action buttons -->
         <div class="button-group">
-            <button id="predict-btn" class="btn btn-primary" data-i18n="editor.btnPredict">开始预测</button>
-            <button id="clear-btn" class="btn btn-secondary" data-i18n="editor.btnClear">清空画布</button>
-            <button id="example-btn" class="btn btn-secondary" data-i18n="editor.btnExample">加载示例</button>
+            <button id="predict-btn" class="btn btn-primary" data-i18n="editor.btnPredict">Predict</button>
+            <button id="clear-btn" class="btn btn-secondary" data-i18n="editor.btnClear">Clear</button>
+            <button id="example-btn" class="btn btn-secondary" data-i18n="editor.btnExample">Load Example</button>
         </div>
     </section>
 
-    <!-- 右侧：结果展示 -->
+    <!-- Right panel: prediction results -->
     <section class="result-panel">
-        <h2 data-i18n="result.title">预测结果</h2>
+        <h2 data-i18n="result.title">Prediction Results</h2>
 
-        <!-- 加载状态 -->
+        <!-- Loading state -->
         <div id="loading-state" class="state-container hidden">
             <div class="spinner"></div>
-            <p data-i18n="result.loading">正在预测中，请稍候...</p>
+            <p data-i18n="result.loading">Predicting, please wait...</p>
         </div>
 
-        <!-- 结果区域 -->
+        <!-- Result area -->
         <div id="result-state" class="state-container hidden">
-            <!-- 标准化 SMILES -->
+            <!-- Canonical SMILES -->
             <div class="result-item">
-                <h3 data-i18n="result.canonicalSmiles">标准 SMILES</h3>
+                <h3 data-i18n="result.canonicalSmiles">Canonical SMILES</h3>
                 <div class="smiles-box">
                     <code id="canonical-smiles"></code>
-                    <button id="copy-smiles-btn" class="btn-copy" data-i18n="result.buttons.copy" title="复制 SMILES">📋</button>
+                    <button id="copy-smiles-btn" class="btn-copy" data-i18n="result.buttons.copy" title="Copy SMILES">📋</button>
                 </div>
             </div>
 
-            <!-- 预测表格 -->
+            <!-- Prediction table -->
             <div class="result-item">
-                <h3 data-i18n="result.predictions">硼原子化学位移预测</h3>
+                <h3 data-i18n="result.predictions">Boron Atom Chemical Shift Predictions</h3>
                 <table class="prediction-table">
                     <thead>
                         <tr>
-                            <th data-i18n="result.table.atomIndex">原子索引</th>
-                            <th data-i18n="result.table.element">元素</th>
-                            <th data-i18n="result.table.chemicalShift">预测化学位移 (ppm)</th>
+                            <th data-i18n="result.table.atomIndex">Atom Index</th>
+                            <th data-i18n="result.table.element">Element</th>
+                            <th data-i18n="result.table.chemicalShift">Predicted Chemical Shift (ppm)</th>
                         </tr>
                     </thead>
                     <tbody id="prediction-tbody">
@@ -70,44 +70,44 @@
                 </table>
             </div>
 
-            <!-- 分子结构图 -->
+            <!-- Molecule structure image -->
             <div class="result-item">
-                <h3 data-i18n="result.moleculeImage">分子结构图（硼原子高亮）</h3>
+                <h3 data-i18n="result.moleculeImage">Molecule Structure (boron atoms highlighted)</h3>
                 <div class="image-container">
-                    <img id="molecule-img" src="" data-i18n="result.moleculeStructureAlt" alt="分子结构图" class="molecule-image">
+                    <img id="molecule-img" src="" data-i18n="result.moleculeStructureAlt" alt="Molecule Structure" class="molecule-image">
                 </div>
             </div>
 
-            <!-- 下载按钮 -->
+            <!-- Download buttons -->
             <div class="result-item">
-                <h3 data-i18n="result.downloads">下载选项</h3>
+                <h3 data-i18n="result.downloads">Download</h3>
                 <div class="download-buttons">
                     <button id="download-csv-btn" class="btn btn-download" data-i18n-html="result.buttons.downloadCSV">
-                        📊 下载 CSV
+                        📊 Download CSV
                     </button>
                     <button id="download-json-btn" class="btn btn-download" data-i18n-html="result.buttons.downloadJSON">
-                        📋 下载 JSON
+                        📋 Download JSON
                     </button>
                     <button id="download-image-btn" class="btn btn-download" data-i18n-html="result.buttons.downloadImage">
-                        🖼️ 下载图片
+                        🖼️ Download Image
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- 错误区域 -->
+        <!-- Error area -->
         <div id="error-state" class="state-container hidden">
             <div class="error-box">
-                <h3 data-i18n="result.error">⚠️ 出错了</h3>
+                <h3 data-i18n="result.error">⚠️ Error</h3>
                 <p id="error-message"></p>
-                <button id="close-error-btn" class="btn btn-secondary" data-i18n="result.closeError">关闭</button>
+                <button id="close-error-btn" class="btn btn-secondary" data-i18n="result.closeError">Close</button>
             </div>
         </div>
 
-        <!-- 初始提示 -->
+        <!-- Initial prompt -->
         <div id="empty-state" class="state-container">
             <div class="empty-message">
-                <p data-i18n="result.empty">👈 在左侧绘制分子结构，然后点击"开始预测"</p>
+                <p data-i18n="result.empty">👈 Draw a molecule on the left, then click "Predict"</p>
             </div>
         </div>
     </section>
@@ -116,6 +116,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{{ url_for('static', filename='js/ketcher-integration.js') }}"></script>
-<script src="{{ url_for('static', filename='js/result-handler.js') }}"></script>
+<script src="static/js/ketcher-integration.js"></script>
+<script src="static/js/result-handler.js"></script>
 {% endblock %}

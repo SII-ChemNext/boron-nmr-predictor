@@ -1,0 +1,111 @@
+{
+  "app": {
+    "title": "11B-NMR 化学位移预测系统",
+    "subtitle": "基于 GNN 和 5 折交叉验证集成模型",
+    "copyright": "© 2025 硼核磁预测系统 | 基于 GNN 和 5 折交叉验证集成模型"
+  },
+  "nav": {
+    "predict": "预测",
+    "history": "历史记录"
+  },
+  "editor": {
+    "title": "分子结构编辑",
+    "selectSolvent": "选择溶剂：",
+    "btnPredict": "开始预测",
+    "btnClear": "清空画布",
+    "btnExample": "加载示例",
+    "ketcherFallback": "⚠️ Ketcher 编辑器加载失败，请直接输入 SMILES",
+    "smilesPlaceholder": "输入分子 SMILES，例如：OB(O)c1ccccc1"
+  },
+  "result": {
+    "title": "预测结果",
+    "loading": "正在预测中，请稍候...",
+    "canonicalSmiles": "标准 SMILES",
+    "predictions": "硼原子化学位移预测",
+    "moleculeImage": "分子结构图（硼原子高亮）",
+    "downloads": "下载选项",
+    "table": {
+      "atomIndex": "原子索引",
+      "element": "元素",
+      "chemicalShift": "预测化学位移 (ppm)",
+      "predictionPpm": "预测 ppm"
+    },
+    "buttons": {
+      "downloadCSV": "📊 下载 CSV",
+      "downloadJSON": "📋 下载 JSON",
+      "downloadImage": "🖼️ 下载图片",
+      "copy": "📋"
+    },
+    "empty": "👈 在左侧绘制分子结构，然后点击\"开始预测\"",
+    "error": "⚠️ 出错了",
+    "closeError": "关闭",
+    "moleculeStructureAlt": "分子结构图",
+    "moleculeStructurePrefix": "分子结构 - "
+  },
+  "history": {
+    "title": "预测历史记录",
+    "loading": "正在加载历史记录...",
+    "empty": "📋 还没有预测记录",
+    "goPredict": "去预测",
+    "loadFailed": "⚠️ 加载失败",
+    "table": {
+      "id": "ID",
+      "time": "时间",
+      "smiles": "分子 SMILES",
+      "solvent": "溶剂",
+      "boronCount": "硼原子数",
+      "actions": "操作"
+    },
+    "viewDetail": "查看详情",
+    "retry": "重试"
+  },
+  "modal": {
+    "detailTitle": "预测详情",
+    "moleculeInfo": "分子信息",
+    "predictionResult": "预测结果",
+    "moleculeStructure": "分子结构",
+    "operations": "操作",
+    "loadToEditor": "加载到编辑器",
+    "smiles": "SMILES:",
+    "solvent": "溶剂:",
+    "timestamp": "时间:"
+  },
+  "messages": {
+    "networkOnline": "网络已连接",
+    "networkOffline": "网络已断开",
+    "copiedToClipboard": "✓ 已复制到剪贴板",
+    "copyFailed": "复制失败",
+    "noImage": "没有可下载的图片",
+    "downloadFailed": "下载失败",
+    "csvExportFailed": "CSV 导出失败",
+    "jsonExportFailed": "JSON 导出失败",
+    "predictionFailed": "预测失败",
+    "predictionError": "预测错误",
+    "loadHistoryFailed": "加载历史记录失败",
+    "getDetailFailed": "获取详情失败",
+    "exampleLoadFailed": "加载示例分子失败",
+    "exampleLoaded": "✓ 已加载示例分子",
+    "canvasCleared": "✓ 已清空画布",
+    "inputSmiles": "请输入 SMILES 字符串",
+    "drawMolecule": "请先在编辑器中绘制分子结构",
+    "getSmilesError": "获取 SMILES 失败",
+    "ketcherNotInitialized": "Ketcher 编辑器未初始化",
+    "setMoleculeFailed": "设置分子结构失败",
+    "languageSwitched": "已切换到中文",
+    "languageSwitchFailed": "语言切换失败"
+  },
+  "errors": {
+    "modelNotLoaded": "模型未加载，请稍后重试",
+    "noJsonData": "请提供 JSON 数据",
+    "emptySmiles": "molecule_smiles 不能为空",
+    "emptySolvent": "solvent 不能为空",
+    "invalidSmiles": "无法解析的 SMILES",
+    "noBoron": "分子中必须包含至少一个硼原子 (B)",
+    "unsupportedSolvent": "不支持的溶剂",
+    "predictionError": "预测失败",
+    "serverError": "服务器内部错误",
+    "invalidFilename": "无效的文件名",
+    "imageNotFound": "图片不存在",
+    "recordNotFound": "记录不存在"
+  }
+}

@@ -8,7 +8,7 @@ console.log('应用启动: 硼核磁预测系统');
  * 应用配置
  */
 const APP_CONFIG = {
-    apiUrl: '/api',
+    get apiUrl() { return (window.BASE_PATH || '/') + 'api'; },
     defaultSolvent: 'CDCl3',
     autoSaveSolvent: true,
     retryAttempts: 3,

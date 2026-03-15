@@ -85,7 +85,10 @@ function displayPredictionResult(data) {
     // 显示分子图
     if (data.image_url) {
         const imgEl = document.getElementById('molecule-img');
-        imgEl.src = data.image_url;
+        // 将绝对路径转为相对路径，兼容反向代理
+        let imgUrl = data.image_url;
+        if (imgUrl.startsWith('/')) imgUrl = imgUrl.substring(1);
+        imgEl.src = (window.BASE_PATH || '/') + imgUrl;
         imgEl.alt = `分子结构 - ${data.canonical_smiles}`;
     }
 
@@ -126,7 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (downloadCsvBtn) {
         downloadCsvBtn.addEventListener('click', () => {
             if (currentPredictionId) {
-                window.location.href = `/api/download/csv/${currentPredictionId}`;
+                window.location.href = (window.BASE_PATH || '/') + `api/download/csv/${currentPredictionId}`;
             }
         });
     }
@@ -134,7 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (downloadJsonBtn) {
         downloadJsonBtn.addEventListener('click', () => {
             if (currentPredictionId) {
-                window.location.href = `/api/download/json/${currentPredictionId}`;
+                window.location.href = (window.BASE_PATH || '/') + `api/download/json/${currentPredictionId}`;
             }
         });
     }
@@ -162,7 +165,7 @@ async function handlePredict() {
         const solvent = document.getElementById('solvent-select').value;
 
         // 发送预测请求
-        const response = await fetch('/api/predict', {
+        const response = await fetch((window.BASE_PATH || '/') + 'api/predict', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

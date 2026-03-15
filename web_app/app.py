@@ -1,4 +1,4 @@
-"""Flask Web 应用 - 硼核磁预测系统"""
+"""Flask Web Application - 11B NMR Chemical Shift Prediction System"""
 
 import os
 import sys
@@ -8,7 +8,7 @@ from datetime import datetime
 import io
 import csv
 
-# 添加当前目录到 Python 路径
+# Add current directory to Python path
 sys.path.insert(0, os.path.dirname(__file__))
 
 from config import DevelopmentConfig
@@ -17,20 +17,20 @@ from database.models import init_db, save_prediction, get_history, get_predictio
 from utils.validators import validate_input
 from utils.exceptions import InvalidSMILESError, ValidationError, PredictionError
 
-# 创建 Flask 应用
+# Create Flask application
 app = Flask(__name__, template_folder='templates', static_folder='static')
 app.config.from_object(DevelopmentConfig)
 
-# 启用 CORS
+# Enable CORS
 CORS(app)
 
-# 全局预测器实例（应用启动时初始化）
+# Global predictor instance (initialized at application startup)
 predictor = None
 _initialized = False
 
 
 def initialize_app():
-    """应用初始化"""
+    """Application initialization"""
     global predictor, _initialized
 
     if _initialized:
@@ -39,90 +39,91 @@ def initialize_app():
     _initialized = True
 
     print("\n" + "="*60)
-    print("硼核磁预测系统 Web UI")
+    print("11B NMR Prediction System - Web UI")
     print("="*60)
 
-    # 初始化数据库
+    # Initialize database
     try:
         init_db(app.config['DATABASE_PATH'])
     except Exception as e:
-        print(f"✗ 数据库初始化失败: {e}")
+        print(f"✗ Database initialization failed: {e}")
         return
 
-    # 创建图片输出目录
+    # Create image output directory
     os.makedirs(app.config['IMAGE_DIR'], exist_ok=True)
 
-    # 加载模型
-    print("\n正在加载模型...")
+    # Load model
+    print("\nLoading model...")
     try:
         predictor = BoronNMRPredictor(
             model_dir=app.config['MODEL_DIR'],
             device=app.config['DEVICE'],
             hidden_dim=app.config['HIDDEN_DIM'],
-            dropout=app.config['DROPOUT']
+            dropout=app.config['DROPOUT'],
+            solvent_dim=app.config['SOLVENT_DIM'],
+            ml_feature_dim=app.config['ML_FEATURE_DIM'],
+            ml_hidden_dim=app.config['ML_HIDDEN_DIM']
         )
-        print("✓ 模型加载完成\n")
+        print("✓ Model loaded successfully\n")
     except Exception as e:
-        print(f"✗ 模型加载失败: {e}\n")
+        print(f"✗ Model loading failed: {e}\n")
         raise
 
 
-# Flask 3.0+ 兼容的初始化方式
+# Flask 3.0+ compatible initialization
 @app.before_request
 def before_request():
-    """在每个请求前执行"""
+    """Execute before each request"""
     initialize_app()
 
 
 # ============================================================================
-# 路由 - 页面
+# Routes - Pages
 # ============================================================================
 
 @app.route('/')
 def index():
-    """主页面"""
+    """Main page"""
     solvents = app.config['SUPPORTED_SOLVENTS']
     return render_template('index.html', solvents=solvents)
 
 
 @app.route('/history')
 def history_page():
-    """历史记录页面"""
+    """Prediction history page"""
     return render_template('history.html')
 
 
 # ============================================================================
-# Ketcher 编辑器路由
+# Ketcher Editor Routes
 # ============================================================================
 
 @app.route('/ketcher')
 def ketcher_standalone():
-    """Ketcher Standalone 编辑器 - 返回修改后的 index.html"""
+    """Ketcher Standalone editor - returns modified index.html"""
     ketcher_path = os.path.join(
         os.path.dirname(__file__),
         'static/lib/ketcher/ketcher-standalone'
     )
 
-    # 读取原始 index.html
+    # Read the original index.html
     index_path = os.path.join(ketcher_path, 'index.html')
     with open(index_path, 'r', encoding='utf-8') as f:
         html = f.read()
 
-    # 在 <head> 中添加 <base> 标签来修复相对路径
-    # 将 ./static/ 替换为 /ketcher/static/
-    html = html.replace('href="./static/', 'href="/ketcher/static/')
-    html = html.replace('src="./static/', 'src="/ketcher/static/')
-
-    # 修复其他相对路径
-    html = html.replace('href="./', 'href="/ketcher/')
-    html = html.replace('src="./', 'src="/ketcher/')
+    # The Ketcher iframe is loaded at .../ketcher path
+    # Relative paths ./static/ inside the iframe need to be mapped to Flask's /ketcher/static/
+    # Since the iframe URL is .../ketcher (no trailing slash), the browser resolves ./xxx as .../xxx
+    # Solution: inject a <base> tag into the iframe HTML <head> to set the correct base path
+    base_inject = '<head><base href="ketcher/">'
+    html = html.replace('<head>', base_inject, 1)
 
     return html
 
 
 @app.route('/ketcher/<path:filename>')
 def ketcher_static(filename):
-    """Ketcher Standalone 的静态文件和资源"""
+    """Static files and assets for Ketcher Standalone"""
     ketcher_path = os.path.join(
         os.path.dirname(__file__),
         'static/lib/ketcher/ketcher-standalone'
@@ -131,21 +132,21 @@ def ketcher_static(filename):
 
 
 # ============================================================================
-# API 路由 - 预测
+# API Routes - Prediction
 # ============================================================================
 
 @app.route('/api/predict', methods=['POST'])
 def api_predict():
     """
-    预测 API 端点
+    Prediction API endpoint
 
-    请求 JSON:
+    Request JSON:
     {
         "molecule_smiles": "OB(O)c1ccccc1",
         "solvent": "CDCl3"
     }
 
-    响应 JSON:
+    Response JSON:
     {
         "success": true,
         "prediction_id": 1,
@@ -162,31 +163,31 @@ def api_predict():
         if not predictor:
             return jsonify({
                 'success': False,
-                'error': '模型未加载，请稍后重试'
+                'error': 'Model not loaded, please try again later'
             }), 500
 
-        # 1. 解析请求数据
+        # 1. Parse request data
         data = request.get_json()
         if not data:
             return jsonify({
                 'success': False,
-                'error': '请提供 JSON 数据'
+                'error': 'Please provide JSON data'
             }), 400
 
         mol_smiles = data.get('molecule_smiles', '').strip()
         solvent_name = data.get('solvent', '').strip()
 
-        # 2. 验证输入
+        # 2. Validate inputs
         if not mol_smiles:
             return jsonify({
                 'success': False,
-                'error': 'molecule_smiles 不能为空'
+                'error': 'molecule_smiles cannot be empty'
             }), 400
 
         if not solvent_name:
             return jsonify({
                 'success': False,
-                'error': 'solvent 不能为空'
+                'error': 'solvent cannot be empty'
             }), 400
 
         try:
@@ -199,16 +200,16 @@ def api_predict():
                 'error': str(e)
             }), 400
 
-        # 3. 调用预测器
+        # 3. Call predictor (V3 model uses solvent name, not SMILES)
         try:
-            result = predictor.predict(canonical_smiles, solvent_smiles)
+            result = predictor.predict(canonical_smiles, solvent_name)
         except PredictionError as e:
             return jsonify({
                 'success': False,
-                'error': f'预测失败: {str(e)}'
+                'error': f'Prediction failed: {str(e)}'
             }), 500
 
-        # 4. 生成分子图片
+        # 4. Generate molecule image
         try:
             image_path = predictor.generate_molecule_image(
                 result['mol_object'],
@@ -218,10 +219,10 @@ def api_predict():
             )
             image_filename = os.path.basename(image_path)
         except Exception as e:
-            app.logger.warning(f"分子图生成失败: {e}")
+            app.logger.warning(f"Molecule image generation failed: {e}")
             image_filename = None
 
-        # 5. 保存到数据库
+        # 5. Save to database
         try:
             prediction_id = save_prediction(
                 db_path=app.config['DATABASE_PATH'],
@@ -231,10 +232,10 @@ def api_predict():
                 image_path=image_filename if image_filename else ''
             )
         except Exception as e:
-            app.logger.warning(f"数据库保存失败: {e}")
+            app.logger.warning(f"Database save failed: {e}")
             prediction_id = None
 
-        # 6. 返回结果
+        # 6. Return result
         return jsonify({
             'success': True,
             'prediction_id': prediction_id,
@@ -246,26 +247,26 @@ def api_predict():
         })
 
     except Exception as e:
-        app.logger.error(f"预测过程异常: {e}", exc_info=True)
+        app.logger.error(f"Prediction error: {e}", exc_info=True)
         return jsonify({
             'success': False,
-            'error': f'服务器内部错误: {str(e)}'
+            'error': f'Internal server error: {str(e)}'
         }), 500
 
 
 # ============================================================================
-# API 路由 - 历史记录
+# API Routes - History
 # ============================================================================
 
 @app.route('/api/history')
 def api_history():
     """
-    获取历史记录 API
+    Get prediction history API
 
-    查询参数:
-    - limit: 返回的最大记录数（默认 50）
+    Query parameters:
+    - limit: maximum number of records to return (default 50)
 
-    响应 JSON:
+    Response JSON:
     {
         "success": true,
         "records": [
@@ -282,7 +283,7 @@ def api_history():
     """
     try:
         limit = request.args.get('limit', app.config['HISTORY_LIMIT'], type=int)
-        limit = min(limit, 200)  # 最多返回 200 条
+        limit = min(limit, 200)  # return at most 200 records
 
         records = get_history(app.config['DATABASE_PATH'], limit=limit)
 
@@ -292,16 +293,16 @@ def api_history():
         })
 
     except Exception as e:
-        app.logger.error(f"获取历史记录失败: {e}")
+        app.logger.error(f"Failed to retrieve history: {e}")
         return jsonify({
             'success': False,
-            'error': f'获取历史记录失败: {str(e)}'
+            'error': f'Failed to retrieve history: {str(e)}'
         }), 500
 
 
 @app.route('/api/prediction/<int:prediction_id>')
 def api_get_prediction(prediction_id):
-    """获取单个预测记录"""
+    """Get a single prediction record by ID"""
     try:
         record = get_prediction_by_id(app.config['DATABASE_PATH'], prediction_id)
         return jsonify({
@@ -317,47 +318,47 @@ def api_get_prediction(prediction_id):
 
 
 # ============================================================================
-# API 路由 - 文件服务
+# API Routes - File Serving
 # ============================================================================
 
 @app.route('/api/image/<filename>')
 def api_serve_image(filename):
-    """提供分子结构图"""
+    """Serve molecule structure images"""
     try:
-        # 安全检查：防止路径遍历
+        # Security check: prevent path traversal
         if '..' in filename or '/' in filename:
-            return jsonify({'error': '无效的文件名'}), 400
+            return jsonify({'error': 'Invalid filename'}), 400
 
         img_path = os.path.join(app.config['IMAGE_DIR'], filename)
 
         if not os.path.exists(img_path):
-            return jsonify({'error': '图片不存在'}), 404
+            return jsonify({'error': 'Image not found'}), 404
 
         return send_file(img_path, mimetype='image/png')
 
     except Exception as e:
-        app.logger.error(f"提供图片失败: {e}")
-        return jsonify({'error': '文件服务错误'}), 500
+        app.logger.error(f"Image serving failed: {e}")
+        return jsonify({'error': 'File serving error'}), 500
 
 
 # ============================================================================
-# API 路由 - 下载
+# API Routes - Downloads
 # ============================================================================
 
 @app.route('/api/download/csv/<int:prediction_id>')
 def api_download_csv(prediction_id):
-    """下载 CSV 格式的预测结果"""
+    """Download prediction results as CSV"""
     try:
         record = get_prediction_by_id(app.config['DATABASE_PATH'], prediction_id)
 
-        # 生成 CSV
+        # Generate CSV
         output = io.StringIO()
         writer = csv.writer(output)
 
-        # 写入标题
-        writer.writerow(['原子索引', '元素', '化学位移 (ppm)'])
+        # Write header
+        writer.writerow(['Atom Index', 'Element', 'Chemical Shift (ppm)'])
 
-        # 写入数据
+        # Write data
         for pred in record['predictions']:
             writer.writerow([
                 pred['atom_index'],
@@ -365,13 +366,13 @@ def api_download_csv(prediction_id):
                 f"{pred['ppm']:.2f}"
             ])
 
-        # 写入元数据
+        # Write metadata
         writer.writerow([])
-        writer.writerow(['标准 SMILES', record['mol_smiles']])
-        writer.writerow(['溶剂', record['solvent_name']])
-        writer.writerow(['时间戳', record['timestamp']])
+        writer.writerow(['Canonical SMILES', record['mol_smiles']])
+        writer.writerow(['Solvent', record['solvent_name']])
+        writer.writerow(['Timestamp', record['timestamp']])
 
-        # 返回文件
+        # Return file
         output.seek(0)
         return send_file(
             io.BytesIO(output.getvalue().encode('utf-8')),
@@ -386,7 +387,7 @@ def api_download_csv(prediction_id):
 
 @app.route('/api/download/json/<int:prediction_id>')
 def api_download_json(prediction_id):
-    """下载 JSON 格式的预测结果"""
+    """Download prediction results as JSON"""
     try:
         record = get_prediction_by_id(app.config['DATABASE_PATH'], prediction_id)
 
@@ -404,38 +405,38 @@ def api_download_json(prediction_id):
 
 
 # ============================================================================
-# 错误处理
+# Error Handlers
 # ============================================================================
 
 @app.errorhandler(404)
 def not_found(error):
-    """404 错误处理"""
-    return jsonify({'error': '页面不存在'}), 404
+    """404 error handler"""
+    return jsonify({'error': 'Page not found'}), 404
 
 
 @app.errorhandler(500)
 def internal_error(error):
-    """500 错误处理"""
-    app.logger.error(f"内部错误: {error}")
-    return jsonify({'error': '服务器内部错误'}), 500
+    """500 error handler"""
+    app.logger.error(f"Internal error: {error}")
+    return jsonify({'error': 'Internal server error'}), 500
 
 
 @app.errorhandler(405)
 def method_not_allowed(error):
-    """405 方法不允许错误处理"""
-    return jsonify({'error': '方法不允许'}), 405
+    """405 method not allowed error handler"""
+    return jsonify({'error': 'Method not allowed'}), 405
 
 
 # ============================================================================
-# 应用启动
+# Application Entry Point
 # ============================================================================
 
 if __name__ == '__main__':
-    # 确保在应用上下文中运行初始化
+    # Ensure initialization runs within the application context
     with app.app_context():
         initialize_app()
 
-    # 启动 Flask 应用
+    # Start Flask application
     app.run(
         host='0.0.0.0',
         port=5000,

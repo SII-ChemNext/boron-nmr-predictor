@@ -1,0 +1,223 @@
+# B11 NMR化学位移预测模型可解释性分析配置文件
+# ======================================================
+
+# 数据路径配置
+paths:
+  # 模型文件
+  model_path: "../models_xgboost/xgboost_model.json"
+
+  # 数据文件
+  train_features: "../data_splits/processed_dataset_X_train.csv"
+  train_labels: "../data_splits/processed_dataset_y_train.csv"
+  test_features: "../data_splits/processed_dataset_X_test.csv"
+  test_labels: "../data_splits/processed_dataset_y_test.csv"
+  val_features: "../data_splits/processed_dataset_X_val.csv"
+  val_labels: "../data_splits/processed_dataset_y_val.csv"
+
+  # 原始SMILES数据(用于可视化)
+  train_smiles: "../original_data_splits/train_original_data.csv"
+  test_smiles: "../original_data_splits/test_original_data.csv"
+  val_smiles: "../original_data_splits/val_original_data.csv"
+
+  # 输出目录
+  output_dir: "./outputs"
+
+# 特征配置
+features:
+  total_dims: 2482
+
+  # 特征分块定义
+  blocks:
+    compound_morgan:
+      start: 0
+      end: 1024
+      type: "morgan_fingerprint"
+      description: "化合物Morgan指纹(radius=2, nBits=1024)"
+
+    compound_rdkit:
+      start: 1024
+      end: 1241
+      type: "rdkit_descriptors"
+      description: "化合物RDKit描述符(217个)"
+
+    solvent_morgan:
+      start: 1241
+      end: 2265
+      type: "morgan_fingerprint"
+      description: "溶剂Morgan指纹(radius=2, nBits=1024)"
+
+    solvent_rdkit:
+      start: 2265
+      end: 2482
+      type: "rdkit_descriptors"
+      description: "溶剂RDKit描述符(217个)"
+
+  # Morgan指纹参数
+  morgan_params:
+    radius: 2
+    n_bits: 1024
+
+# SHAP分析配置
+shap_analysis:
+  # 背景数据集大小(用于TreeExplainer)
+  # 从训练集中抽取样本建立SHAP基准
+  # 1500样本 = 轻量配置
+  background_size: 1500
+
+  # 分析样本数量
+  # 注意: 实际分析使用的是测试集(不是从训练集采样)
+  # 此参数主要用于控制采样比例,但测试集通常会全部使用
+  # 测试集大小约为训练集的10% (~400样本)
+  analysis_sample_size: 300
+
+  # 全局分析
+  global:
+    # 特征重要性top-K
+    top_k_features: 50
+
+    # 按特征块汇总
+    summarize_by_block: true
+
+    # 生成摘要图
+    plots:
+      - "summary_plot"
+      - "bar_plot"
+      - "beeswarm_plot"
+      - "heatmap"
+
+  # 局部分析
+  local:
+    # 单样本分析数量
+    num_examples: 10
+
+    # 瀑布图
+    waterfall_plot: true
+
+    # 力导向图
+    force_plot: true
+
+# Morgan指纹子结构分析配置
+substructure_analysis:
+  # 分析top-K的Morgan bit
+  top_k_bits: 20
+
+  # 为每个重要bit生成子结构示例
+  examples_per_bit: 5
+
+  # 可视化参数
+  visualization:
+    mol_size: [300, 300]
+    highlight_color: [0.8, 0.8, 0]
+
+  # 使用GetMorganFingerprint的bitInfo参数
+  extract_substructures: true
+
+# 溶剂化效应验证配置
+solvent_effect_analysis:
+  # 1. 极性对比分析
+  polarity_analysis:
+    enabled: true
+
+    # 定义极性/非极性溶剂(SMILES)
+    polar_solvents:
+      - "O"  # 水
+      - "CO"  # 甲醇
+      - "CCO"  # 乙醇
+      - "CC(=O)C"  # 丙酮
+      - "C1CCOC1"  # THF
+
+    non_polar_solvents:
+      - "c1ccccc1"  # 苯
+      - "CCCCCC"  # 己烷
+      - "ClCCl"  # 二氯甲烷
+      - "ClC(Cl)Cl"  # 氯仿
+
+    # 生成对比图
+    plot_comparison: true
+
+  # 2. 溶剂描述符敏感性分析
+  descriptor_sensitivity:
+    enabled: true
+
+    # 关键溶剂描述符(需要与RDKit描述符名称对应)
+    key_descriptors:
+      - "MolLogP"  # 疏水性
+      - "TPSA"  # 拓扑极性表面积
+      - "NumHDonors"  # 氢键供体
+      - "NumHAcceptors"  # 氢键受体
+      - "MolWt"  # 分子量
+
+    # 扰动分析
+    perturbation:
+      method: "percentile_swap"  # 使用分位数交换方法
+      percentiles: [10, 50, 90]
+
+  # 3. 溶剂切换实验
+  solvent_switching:
+    enabled: true
+
+    # 固定化合物,切换溶剂
+    num_compounds: 10
+
+    # 生成溶剂对化学位移的影响曲线
+    plot_shift_curves: true
+
+# 物理化学合理性验证(压力测试)
+validation_tests:
+  # 测试1: 同系物趋势
+  homologous_series:
+    enabled: true
+    description: "验证烷基链增长对化学位移的影响"
+
+  # 测试2: 取代基电子效应
+  substituent_effect:
+    enabled: true
+    description: "验证吸电子/推电子基团的影响"
+
+  # 测试3: 溶剂极性梯度
+  solvent_polarity_gradient:
+    enabled: true
+    description: "沿极性梯度观察位移变化"
+
+  # 测试4: 预测边界检查
+  prediction_sanity:
+    enabled: true
+    description: "检查异常预测值"
+    thresholds:
+      min_shift: -50
+      max_shift: 100
+
+# 可视化配置
+visualization:
+  # 图表风格
+  style: "seaborn-v0_8-darkgrid"
+
+  # DPI
+  dpi: 300
+
+  # 颜色方案
+  color_palette: "viridis"
+
+  # 字体大小
+  font_size: 12
+
+  # 保存格式
+  save_formats: ["png", "pdf"]
+
+# 报告生成
+report:
+  # 自动生成markdown报告
+  auto_generate: true
+
+  # 报告章节
+  sections:
+    - "executive_summary"
+    - "global_shap_analysis"
+    - "feature_importance_by_block"
+    - "substructure_analysis"
+    - "solvent_effect_validation"
+    - "stress_tests"
+    - "recommendations"
+
+  # 包含所有图表
+  include_all_figures: true

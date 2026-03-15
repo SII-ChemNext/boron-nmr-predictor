@@ -1,0 +1,93 @@
+
+  ███████╗██╗  ██╗███████╗███╗   ███╗██╗ █████╗
+  ██╔════╝██║  ██║██╔════╝████╗ ████║██║██╔══██╗
+  ██║     ███████║█████╗  ██╔████╔██║██║███████║
+  ██║     ██╔══██║██╔══╝  ██║╚██╔╝██║██║██╔══██║
+  ╚██████╗██║  ██║███████╗██║ ╚═╝ ██║██║██║  ██║
+   ╚══════╝╚═╝  ╚═╝╚══════╝╚═╝     ╚═╝╚═╝╚═╝  ╚═╝
+
+CHEMIA - v1.3.0
+
+========================================================================================
+Log Generated:            2026-01-19 04:49:28
+Experiment Run Name:      B_shift_predict_seed44_regression_20260119_044359
+Run Configuration:        experiment_name=B_shift_predict_seed44,
+                           task_type=regression, split_mode=train_valid_test,
+                           data.source_mode=single_file, data.single_file_config.main_
+                           file_path=LPH_work_cc/data_b11_all_single_ppm.csv,
+                           data.single_file_config.smiles_col=['Smiles', 'solvent'],
+                           data.single_file_config.target_col=ppm_values,
+                           training.models_to_run=[7 items], training.n_trials=30,
+                           training.quiet_optuna=True,
+                           training.optuna_config.sampler=TPE,
+                           training.optuna_config.pruner=MedianPruner,
+                           training.optuna_config.n_startup_trials=10,
+                           features.per_smiles_col_generators.Smiles=[{'type':
+                           'morgan', 'radius': 2, 'nBits': 1024}, {'type':
+                           'rdkit_descriptors'}],
+                           features.per_smiles_col_generators.solvent=[{'type':
+                           'morgan', 'radius': 2, 'nBits': 1024}, {'type':
+                           'rdkit_descriptors'}], features.scaling=True,
+                           split_config.train_valid_test.valid_size=0.1,
+                           split_config.train_valid_test.test_size=0.1,
+                           split_config.train_valid_test.random_state=44,
+                           evaluation.primary_metric=r2,
+                           evaluation.additional_metrics=['rmse', 'mae', 'mape'],
+                           output.save_predictions=True,
+                           output.save_feature_importance=True,
+                           output.save_cv_predictions=True,
+                           output.save_hyperparameters=True,
+                           output.generate_model_comparison=True,
+                           output.save_artifacts=[4 items], computational.n_jobs=-1,
+                           computational.memory_efficient=True,
+                           computational.random_state=44,
+                           advanced.enable_stacking=False,
+                           advanced.feature_analysis.permutation_importance=True,
+                           advanced.feature_analysis.shap_analysis=False, advanced.mod
+                           el_interpretation.save_partial_dependence=False,
+                           advanced.model_interpretation.save_learning_curves=True
+----------------------------------------------------------------------------------------
+Model Trained:            XGBOOST
+Task Type:                regression
+Feature Concatenation:    Smiles (1241 features) -> solvent (1241 features)
+
+--- Data & Split Information ---
+Training Set Dimensions:  3743 samples x 2482 features
+HPO Method:               Hold-out Val HPO
+Validation Set Dimensions: 469 samples x 2482 features
+Test Set Dimensions:      468 samples x 2482 features
+
+========================================================================================
+
+--- Hyperparameter Optimization (Optuna) ---
+Best HPO Score (R²): 0.9057
+  Scores from individual HPO folds: [0.9057]
+
+Best Hyperparameters Found:
+{
+    "n_estimators": 1200,
+    "learning_rate": 0.021336801820461493,
+    "max_depth": 10,
+    "min_child_weight": 6,
+    "gamma": 0.408451224225837,
+    "subsample": 0.6960571958355272,
+    "colsample_bytree": 0.6359323745734057,
+    "reg_alpha": 0.011532466137001872,
+    "reg_lambda": 2.4519910677165494e-07
+}
+
+========================================================================================
+
+--- Final Model Performance (on pre-defined splits) ---
+| Metric                    |    Train Set    | Validation Set  |    Test Set     |
+|---------------------------|-----------------|-----------------|-----------------|
+| R²                        |     0.9995      |     0.9057      |     0.9304      |
+| RMSE                      |     0.5073      |     6.2510      |     5.8371      |
+| MAE                       |     0.3303      |     2.5024      |     2.7135      |
+|---------------------------|-----------------|-----------------|-----------------|
+
+========================================================================================
+
+Model-Specific Runtime (HPO, Fit, Eval): 207.58 seconds
+
+*** End of CHEMIA Log for this Model ***

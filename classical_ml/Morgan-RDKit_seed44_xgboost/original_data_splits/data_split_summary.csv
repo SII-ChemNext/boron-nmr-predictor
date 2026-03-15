@@ -1,0 +1,4 @@
+split,count,percentage
+train,3743,80.0%
+val,469,10.0%
+test,468,10.0%

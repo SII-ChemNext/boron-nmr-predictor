@@ -3,26 +3,26 @@
 {% block content %}
 <div class="page-container history-page">
     <section class="history-panel">
-        <h2 data-i18n="history.title">预测历史记录</h2>
+        <h2 data-i18n="history.title">Prediction History</h2>
 
-        <!-- 加载状态 -->
+        <!-- Loading state -->
         <div id="loading-state" class="state-container hidden">
             <div class="spinner"></div>
-            <p data-i18n="history.loading">正在加载历史记录...</p>
+            <p data-i18n="history.loading">Loading history...</p>
         </div>
 
-        <!-- 历史记录表格 -->
+        <!-- History table -->
         <div id="history-content" class="state-container hidden">
             <div class="table-wrapper">
                 <table class="history-table">
                     <thead>
                         <tr>
                             <th data-i18n="history.table.id">ID</th>
-                            <th data-i18n="history.table.time">时间</th>
-                            <th data-i18n="history.table.smiles">分子 SMILES</th>
-                            <th data-i18n="history.table.solvent">溶剂</th>
-                            <th data-i18n="history.table.boronCount">硼原子数</th>
-                            <th data-i18n="history.table.actions">操作</th>
+                            <th data-i18n="history.table.time">Time</th>
+                            <th data-i18n="history.table.smiles">Molecule SMILES</th>
+                            <th data-i18n="history.table.solvent">Solvent</th>
+                            <th data-i18n="history.table.boronCount">Boron Count</th>
+                            <th data-i18n="history.table.actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="history-tbody">
@@ -31,47 +31,47 @@
             </div>
         </div>
 
-        <!-- 空状态 -->
+        <!-- Empty state -->
         <div id="empty-state" class="state-container">
             <div class="empty-message">
-                <p data-i18n="history.empty">📋 还没有预测记录</p>
-                <a href="/" class="btn btn-primary" data-i18n="history.goPredict">去预测</a>
+                <p data-i18n="history.empty">📋 No prediction records yet</p>
+                <a href="./" class="btn btn-primary" data-i18n="history.goPredict">Go Predict</a>
             </div>
         </div>
 
-        <!-- 错误状态 -->
+        <!-- Error state -->
         <div id="error-state" class="state-container hidden">
             <div class="error-box">
-                <h3 data-i18n="history.loadFailed">⚠️ 加载失败</h3>
+                <h3 data-i18n="history.loadFailed">⚠️ Load Failed</h3>
                 <p id="error-message"></p>
-                <button id="retry-btn" class="btn btn-primary" data-i18n="history.retry">重试</button>
+                <button id="retry-btn" class="btn btn-primary" data-i18n="history.retry">Retry</button>
             </div>
         </div>
     </section>
 
-    <!-- 详情弹窗 -->
+    <!-- Detail modal -->
     <div id="detail-modal" class="modal hidden">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 data-i18n="modal.detailTitle">预测详情</h3>
+                <h3 data-i18n="modal.detailTitle">Prediction Detail</h3>
                 <button id="close-modal-btn" class="modal-close">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="detail-section">
-                    <h4 data-i18n="modal.moleculeInfo">分子信息</h4>
+                    <h4 data-i18n="modal.moleculeInfo">Molecule Information</h4>
                     <p><strong data-i18n="modal.smiles">SMILES:</strong> <code id="detail-smiles"></code></p>
-                    <p><strong data-i18n="modal.solvent">溶剂:</strong> <span id="detail-solvent"></span></p>
-                    <p><strong data-i18n="modal.timestamp">时间:</strong> <span id="detail-timestamp"></span></p>
+                    <p><strong data-i18n="modal.solvent">Solvent:</strong> <span id="detail-solvent"></span></p>
+                    <p><strong data-i18n="modal.timestamp">Time:</strong> <span id="detail-timestamp"></span></p>
                 </div>
 
                 <div class="detail-section">
-                    <h4 data-i18n="modal.predictionResult">预测结果</h4>
+                    <h4 data-i18n="modal.predictionResult">Prediction Results</h4>
                     <table class="detail-table">
                         <thead>
                             <tr>
-                                <th data-i18n="result.table.atomIndex">原子索引</th>
-                                <th data-i18n="result.table.element">元素</th>
-                                <th data-i18n="result.table.predictionPpm">预测 ppm</th>
+                                <th data-i18n="result.table.atomIndex">Atom Index</th>
+                                <th data-i18n="result.table.element">Element</th>
+                                <th data-i18n="result.table.predictionPpm">Predicted ppm</th>
                             </tr>
                         </thead>
                         <tbody id="detail-predictions">
@@ -80,18 +80,18 @@
                 </div>
 
                 <div class="detail-section">
-                    <h4 data-i18n="modal.moleculeStructure">分子结构</h4>
+                    <h4 data-i18n="modal.moleculeStructure">Molecule Structure</h4>
                     <div class="image-container">
-                        <img id="detail-image" src="" data-i18n="result.moleculeStructureAlt" alt="分子结构" class="molecule-image">
+                        <img id="detail-image" src="" data-i18n="result.moleculeStructureAlt" alt="Molecule Structure" class="molecule-image">
                     </div>
                 </div>
 
                 <div class="detail-section">
-                    <h4 data-i18n="modal.operations">操作</h4>
+                    <h4 data-i18n="modal.operations">Actions</h4>
                     <div class="button-group">
-                        <button id="detail-load-btn" class="btn btn-primary" data-i18n="modal.loadToEditor">加载到编辑器</button>
-                        <button id="detail-download-csv-btn" class="btn btn-download" data-i18n="result.buttons.downloadCSV">下载 CSV</button>
-                        <button id="detail-download-json-btn" class="btn btn-download" data-i18n="result.buttons.downloadJSON">下载 JSON</button>
+                        <button id="detail-load-btn" class="btn btn-primary" data-i18n="modal.loadToEditor">Load to Editor</button>
+                        <button id="detail-download-csv-btn" class="btn btn-download" data-i18n="result.buttons.downloadCSV">Download CSV</button>
+                        <button id="detail-download-json-btn" class="btn btn-download" data-i18n="result.buttons.downloadJSON">Download JSON</button>
                     </div>
                 </div>
             </div>
@@ -103,7 +103,7 @@
 
 {% block extra_js %}
 <script>
-// 页面加载时获取历史记录
+// Load history on page load
 document.addEventListener('DOMContentLoaded', loadHistory);
 
 async function loadHistory() {
@@ -118,7 +118,7 @@ async function loadHistory() {
     errorState.classList.add('hidden');
 
     try {
-        const response = await fetch('/api/history?limit=100');
+        const response = await fetch((window.BASE_PATH || '/') + 'api/history?limit=100');
         const data = await response.json();
 
         if (!data.success) {
@@ -131,7 +131,7 @@ async function loadHistory() {
             return;
         }
 
-        // 填充表格
+        // Populate table
         const tbody = document.getElementById('history-tbody');
         tbody.innerHTML = '';
 
@@ -139,12 +139,12 @@ async function loadHistory() {
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${record.id}</td>
-                <td>${new Date(record.timestamp).toLocaleString('zh-CN')}</td>
+                <td>${new Date(record.timestamp).toLocaleString()}</td>
                 <td><code class="smiles-cell">${record.mol_smiles}</code></td>
                 <td>${record.solvent_name}</td>
                 <td>${record.predictions.length}</td>
                 <td>
-                    <button class="btn-link" onclick="showDetail(${record.id})" data-i18n="history.viewDetail">查看详情</button>
+                    <button class="btn-link" onclick="showDetail(${record.id})" data-i18n="history.viewDetail">View Detail</button>
                 </td>
             `;
             tbody.appendChild(row);
@@ -154,7 +154,7 @@ async function loadHistory() {
         contentState.classList.remove('hidden');
 
     } catch (error) {
-        console.error(window.i18n ? window.i18n.t('messages.loadHistoryFailed') : '加载历史记录失败', error);
+        console.error(window.i18n ? window.i18n.t('messages.loadHistoryFailed') : 'Failed to load history', error);
         loadingState.classList.add('hidden');
         errorState.classList.remove('hidden');
         document.getElementById('error-message').textContent = error.message;
@@ -163,21 +163,21 @@ async function loadHistory() {
 
 async function showDetail(predictionId) {
     try {
-        const response = await fetch(`/api/prediction/${predictionId}`);
+        const response = await fetch((window.BASE_PATH || '/') + `api/prediction/${predictionId}`);
         const data = await response.json();
 
         if (!data.success) {
-            throw new Error(data.error || (window.i18n ? window.i18n.t('messages.getDetailFailed') : '获取详情失败'));
+            throw new Error(data.error || (window.i18n ? window.i18n.t('messages.getDetailFailed') : 'Failed to get detail'));
         }
 
         const record = data.record;
 
-        // 填充详情
+        // Populate detail fields
         document.getElementById('detail-smiles').textContent = record.mol_smiles;
         document.getElementById('detail-solvent').textContent = record.solvent_name;
-        document.getElementById('detail-timestamp').textContent = new Date(record.timestamp).toLocaleString('zh-CN');
+        document.getElementById('detail-timestamp').textContent = new Date(record.timestamp).toLocaleString();
 
-        // 填充预测表格
+        // Populate prediction table
         const tbody = document.getElementById('detail-predictions');
         tbody.innerHTML = '';
         record.predictions.forEach(pred => {
@@ -190,35 +190,35 @@ async function showDetail(predictionId) {
             tbody.appendChild(row);
         });
 
-        // 设置图片
+        // Set image
         if (record.image_path) {
-            document.getElementById('detail-image').src = `/api/image/${record.image_path}`;
+            document.getElementById('detail-image').src = (window.BASE_PATH || '/') + `api/image/${record.image_path}`;
         }
 
-        // 设置按钮事件
+        // Set button events
         document.getElementById('detail-load-btn').onclick = () => {
             localStorage.setItem('loadMolecule', record.mol_smiles);
-            window.location.href = '/';
+            window.location.href = './';
         };
 
         document.getElementById('detail-download-csv-btn').onclick = () => {
-            window.location.href = `/api/download/csv/${predictionId}`;
+            window.location.href = (window.BASE_PATH || '/') + `api/download/csv/${predictionId}`;
         };
 
         document.getElementById('detail-download-json-btn').onclick = () => {
-            window.location.href = `/api/download/json/${predictionId}`;
+            window.location.href = (window.BASE_PATH || '/') + `api/download/json/${predictionId}`;
         };
 
-        // 显示弹窗
+        // Show modal
         document.getElementById('detail-modal').classList.remove('hidden');
 
     } catch (error) {
-        console.error(window.i18n ? window.i18n.t('messages.getDetailFailed') : '获取详情失败', error);
-        alert((window.i18n ? window.i18n.t('messages.getDetailFailed') : '获取详情失败') + ': ' + error.message);
+        console.error(window.i18n ? window.i18n.t('messages.getDetailFailed') : 'Failed to get detail', error);
+        alert((window.i18n ? window.i18n.t('messages.getDetailFailed') : 'Failed to get detail') + ': ' + error.message);
     }
 }
 
-// 关闭弹窗
+// Close modal
 document.getElementById('close-modal-btn').addEventListener('click', () => {
     document.getElementById('detail-modal').classList.add('hidden');
 });
@@ -229,7 +229,7 @@ document.getElementById('detail-modal').addEventListener('click', (e) => {
     }
 });
 
-// 重试按钮
+// Retry button
 document.getElementById('retry-btn').addEventListener('click', loadHistory);
 </script>
 {% endblock %}

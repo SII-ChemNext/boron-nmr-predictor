@@ -1,0 +1,111 @@
+{
+  "app": {
+    "title": "11B-NMR Chemical Shift Prediction System",
+    "subtitle": "Based on GNN and 5-Fold Cross-Validation Ensemble Model",
+    "copyright": "© 2025 Boron NMR Prediction System | Based on GNN and 5-Fold CV Ensemble Model"
+  },
+  "nav": {
+    "predict": "Predict",
+    "history": "History"
+  },
+  "editor": {
+    "title": "Molecular Structure Editor",
+    "selectSolvent": "Select Solvent:",
+    "btnPredict": "Start Prediction",
+    "btnClear": "Clear Canvas",
+    "btnExample": "Load Example",
+    "ketcherFallback": "⚠️ Ketcher editor failed to load, please enter SMILES directly",
+    "smilesPlaceholder": "Enter molecular SMILES, e.g., OB(O)c1ccccc1"
+  },
+  "result": {
+    "title": "Prediction Results",
+    "loading": "Predicting, please wait...",
+    "canonicalSmiles": "Canonical SMILES",
+    "predictions": "Boron Atom Chemical Shift Prediction",
+    "moleculeImage": "Molecular Structure (Boron Atoms Highlighted)",
+    "downloads": "Download Options",
+    "table": {
+      "atomIndex": "Atom Index",
+      "element": "Element",
+      "chemicalShift": "Predicted Chemical Shift (ppm)",
+      "predictionPpm": "Prediction (ppm)"
+    },
+    "buttons": {
+      "downloadCSV": "📊 Download CSV",
+      "downloadJSON": "📋 Download JSON",
+      "downloadImage": "🖼️ Download Image",
+      "copy": "📋"
+    },
+    "empty": "👈 Draw molecular structure on the left, then click 'Start Prediction'",
+    "error": "⚠️ Error Occurred",
+    "closeError": "Close",
+    "moleculeStructureAlt": "Molecular Structure",
+    "moleculeStructurePrefix": "Molecular Structure - "
+  },
+  "history": {
+    "title": "Prediction History",
+    "loading": "Loading history records...",
+    "empty": "📋 No prediction records yet",
+    "goPredict": "Go Predict",
+    "loadFailed": "⚠️ Loading Failed",
+    "table": {
+      "id": "ID",
+      "time": "Time",
+      "smiles": "Molecular SMILES",
+      "solvent": "Solvent",
+      "boronCount": "Boron Count",
+      "actions": "Actions"
+    },
+    "viewDetail": "View Details",
+    "retry": "Retry"
+  },
+  "modal": {
+    "detailTitle": "Prediction Details",
+    "moleculeInfo": "Molecular Information",
+    "predictionResult": "Prediction Results",
+    "moleculeStructure": "Molecular Structure",
+    "operations": "Operations",
+    "loadToEditor": "Load to Editor",
+    "smiles": "SMILES:",
+    "solvent": "Solvent:",
+    "timestamp": "Timestamp:"
+  },
+  "messages": {
+    "networkOnline": "Network connected",
+    "networkOffline": "Network disconnected",
+    "copiedToClipboard": "✓ Copied to clipboard",
+    "copyFailed": "Copy failed",
+    "noImage": "No image available for download",
+    "downloadFailed": "Download failed",
+    "csvExportFailed": "CSV export failed",
+    "jsonExportFailed": "JSON export failed",
+    "predictionFailed": "Prediction failed",
+    "predictionError": "Prediction error",
+    "loadHistoryFailed": "Failed to load history",
+    "getDetailFailed": "Failed to get details",
+    "exampleLoadFailed": "Failed to load example molecule",
+    "exampleLoaded": "✓ Example molecule loaded",
+    "canvasCleared": "✓ Canvas cleared",
+    "inputSmiles": "Please enter SMILES string",
+    "drawMolecule": "Please draw molecular structure in the editor first",
+    "getSmilesError": "Failed to get SMILES",
+    "ketcherNotInitialized": "Ketcher editor not initialized",
+    "setMoleculeFailed": "Failed to set molecular structure",
+    "languageSwitched": "Switched to English",
+    "languageSwitchFailed": "Language switch failed"
+  },
+  "errors": {
+    "modelNotLoaded": "Model not loaded, please try again later",
+    "noJsonData": "Please provide JSON data",
+    "emptySmiles": "molecule_smiles cannot be empty",
+    "emptySolvent": "solvent cannot be empty",
+    "invalidSmiles": "Cannot parse SMILES",
+    "noBoron": "Molecule must contain at least one boron atom (B)",
+    "unsupportedSolvent": "Unsupported solvent",
+    "predictionError": "Prediction failed",
+    "serverError": "Internal server error",
+    "invalidFilename": "Invalid filename",
+    "imageNotFound": "Image not found",
+    "recordNotFound": "Record not found"
+  }
+}

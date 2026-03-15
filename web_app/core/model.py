@@ -1,102 +1,221 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch_geometric.nn import TransformerConv, BatchNorm
+from torch_geometric.nn import TransformerConv, BatchNorm, global_add_pool
 
-class BoronNMRNet(nn.Module):
-    def __init__(self, node_in_dim, edge_in_dim, solvent_dim, hidden_dim=128, dropout=0.2):
-        """
-        参数说明:
-        node_in_dim:  节点特征输入维度 (来自 features.py)
-        edge_in_dim:  边特征输入维度 (来自 features.py)
-        solvent_dim:  溶剂指纹维度 (1024)
-        hidden_dim:   GNN 内部隐藏层宽度 (支持 Optuna 调参)
-        dropout:      Dropout 概率 (支持 Optuna 调参)
-        """
-        super(BoronNMRNet, self).__init__()
-        
+class BoronNMRNet_V3(nn.Module):
+    """
+    Improved 11B NMR prediction model (multi-head concatenation version).
+
+    Key features:
+    1. Virtual Node mechanism
+    2. Learnable solvent embedding
+    3. Attention weight extraction support (interpretability)
+    4. TransformerConv with concat=True (multi-head concatenation)
+    """
+
+    def __init__(self, node_in_dim, edge_in_dim,
+                 num_solvents=11, solvent_dim=64,
+                 hidden_dim=256, dropout=0.05, num_heads=4,
+                 ml_feature_dim=0, ml_hidden_dim=64):
+        super().__init__()
+
         self.dropout_rate = dropout
-        
-        # 1. 特征编码层 (Embedding)
-        # 将不同维度的原始特征统一映射到 hidden_dim
+        self.hidden_dim = hidden_dim
+        self.num_heads = num_heads
+        self.head_dim = hidden_dim // num_heads  # 256 / 4 = 64
+
+        # ========================================
+        # 1. Encoding layers
+        # ========================================
         self.node_encoder = nn.Linear(node_in_dim, hidden_dim)
         self.edge_encoder = nn.Linear(edge_in_dim, hidden_dim)
-        
-        # 2. GNN 主干 (Backbone)
-        # 使用 TransformerConv，因为它擅长捕捉长距离依赖 (Long-range dependency)
-        # heads=4, concat=False 意味着多头注意力融合后维度保持不变
-        self.conv1 = TransformerConv(hidden_dim, hidden_dim, heads=4, edge_dim=hidden_dim, concat=False)
+
+        # Solvent embedding layer
+        self.solvent_embedding = nn.Embedding(num_solvents, solvent_dim)
+
+        # Virtual node embedding
+        self.virtual_node_encoder = nn.Embedding(1, hidden_dim)
+
+        # ========================================
+        # 2. GNN backbone + virtual node update layers
+        # concat=True: each head outputs head_dim, concatenated to hidden_dim
+        # ========================================
+        self.conv1 = TransformerConv(hidden_dim, self.head_dim, heads=num_heads,
+                                     edge_dim=hidden_dim, concat=True)
         self.bn1 = BatchNorm(hidden_dim)
-        
-        self.conv2 = TransformerConv(hidden_dim, hidden_dim, heads=4, edge_dim=hidden_dim, concat=False)
+
+        self.conv2 = TransformerConv(hidden_dim, self.head_dim, heads=num_heads,
+                                     edge_dim=hidden_dim, concat=True)
         self.bn2 = BatchNorm(hidden_dim)
-        
-        self.conv3 = TransformerConv(hidden_dim, hidden_dim, heads=4, edge_dim=hidden_dim, concat=False)
+
+        self.conv3 = TransformerConv(hidden_dim, self.head_dim, heads=num_heads,
+                                     edge_dim=hidden_dim, concat=True)
         self.bn3 = BatchNorm(hidden_dim)
-        
-        # 3. 融合与预测头 (Prediction Head)
-        # 最终特征 = GNN提取的原子特征 + 溶剂的全局指纹
-        fusion_dim = hidden_dim + solvent_dim
-        
+
+        # Virtual node update MLP (one per layer)
+        self.vn_mlp_list = nn.ModuleList([
+            nn.Sequential(
+                nn.Linear(hidden_dim, hidden_dim),
+                nn.BatchNorm1d(hidden_dim),
+                nn.ReLU(),
+                nn.Dropout(dropout)
+            ) for _ in range(3)
+        ])
+
+        # ========================================
+        # 3. ML global feature encoding layer (SHAP Top-20)
+        # ========================================
+        self.ml_feature_dim = ml_feature_dim
+        if ml_feature_dim > 0:
+            self.ml_encoder = nn.Sequential(
+                nn.Linear(ml_feature_dim, ml_hidden_dim),
+                nn.ReLU(),
+                nn.Dropout(dropout)
+            )
+            fusion_dim = hidden_dim + solvent_dim + ml_hidden_dim
+        else:
+            self.ml_encoder = None
+            fusion_dim = hidden_dim + solvent_dim
+
+        # ========================================
+        # 4. Prediction head
+        # ========================================
         self.mlp = nn.Sequential(
             nn.Linear(fusion_dim, 256),
             nn.ReLU(),
-            nn.Dropout(self.dropout_rate), # 这里使用传入的 dropout
+            nn.Dropout(self.dropout_rate),
             nn.Linear(256, 128),
             nn.ReLU(),
-            nn.Linear(128, 1) # 输出最终的 ppm 值
+            nn.Linear(128, 1)
         )
 
-    def forward(self, x, edge_index, edge_attr, solvent_x, mask_b, batch_index):
+    def forward(self, x, edge_index, edge_attr, solvent_ids, mask_b, batch_index,
+                ml_global_features=None, return_attention=False):
         """
-        前向传播函数
+        Forward pass.
+
+        Args:
+            x: node features [num_nodes, node_in_dim]
+            edge_index: edge indices [2, num_edges]
+            edge_attr: edge features [num_edges, edge_in_dim]
+            solvent_ids: solvent IDs [batch_size]
+            mask_b: boron atom mask [num_nodes]
+            batch_index: batch assignment for each node [num_nodes]
+            ml_global_features: ML global features [batch_size, ml_feature_dim] (optional)
+            return_attention: whether to return attention weights (for interpretability)
+
+        Returns:
+            out: predicted chemical shifts [num_b_atoms]
+            (optional) attention_weights: attention weights
         """
-        # --- A. 初始编码 ---
+        # ========================================
+        # A. Initial encoding
+        # ========================================
         x = self.node_encoder(x)
         edge_attr = self.edge_encoder(edge_attr)
-        
-        # --- B. GNN 消息传递 (带残差连接) ---
-        
-        # 第一层
-        x_in = x # 保存输入用于残差
-        x = self.conv1(x, edge_index, edge_attr)
+
+        # Initialize virtual nodes
+        num_graphs = batch_index.max().item() + 1
+        virtual_node_feat = self.virtual_node_encoder(
+            torch.zeros(num_graphs, dtype=torch.long, device=x.device)
+        )  # [num_graphs, hidden_dim]
+
+        # ========================================
+        # B. GNN message passing + virtual node interaction
+        # ========================================
+        attention_weights = [] if return_attention else None
+
+        # === Layer 1 ===
+        x_in = x
+        x = x + virtual_node_feat[batch_index]  # virtual node -> real nodes
+
+        if return_attention:
+            x, (edge_idx, attn) = self.conv1(x, edge_index, edge_attr,
+                                            return_attention_weights=True)
+            attention_weights.append((edge_idx, attn))
+        else:
+            x = self.conv1(x, edge_index, edge_attr)
+
         x = self.bn1(x)
         x = F.relu(x)
         x = F.dropout(x, p=self.dropout_rate, training=self.training)
-        x = x + x_in # 残差连接 1
-        
-        # 第二层
+        x = x + x_in  # residual connection
+
+        virtual_node_feat = self.vn_mlp_list[0](
+            global_add_pool(x, batch_index) + virtual_node_feat
+        )  # real nodes -> virtual node
+
+        # === Layer 2 ===
         x_in = x
-        x = self.conv2(x, edge_index, edge_attr)
+        x = x + virtual_node_feat[batch_index]
+
+        if return_attention:
+            x, (edge_idx, attn) = self.conv2(x, edge_index, edge_attr,
+                                            return_attention_weights=True)
+            attention_weights.append((edge_idx, attn))
+        else:
+            x = self.conv2(x, edge_index, edge_attr)
+
         x = self.bn2(x)
         x = F.relu(x)
         x = F.dropout(x, p=self.dropout_rate, training=self.training)
-        x = x + x_in # 残差连接 2
-        
-        # 第三层
+        x = x + x_in
+
+        virtual_node_feat = self.vn_mlp_list[1](
+            global_add_pool(x, batch_index) + virtual_node_feat
+        )
+
+        # === Layer 3 ===
         x_in = x
-        x = self.conv3(x, edge_index, edge_attr)
+        x = x + virtual_node_feat[batch_index]
+
+        if return_attention:
+            x, (edge_idx, attn) = self.conv3(x, edge_index, edge_attr,
+                                            return_attention_weights=True)
+            attention_weights.append((edge_idx, attn))
+        else:
+            x = self.conv3(x, edge_index, edge_attr)
+
         x = self.bn3(x)
         x = F.relu(x)
-        x = x + x_in # 残差连接 3
-        
-        # --- C. 提取目标原子 (Boron) ---
-        # 只取 mask_b 为 True 的节点
-        b_features = x[mask_b] 
-        
-        # --- D. 融合溶剂信息 ---
-        # 1. 找出这些 B 原子分别属于 Batch 中的哪个分子
-        # batch_index 的形状是 [Num_Nodes]，只取 B 原子的部分
+        x = x + x_in
+
+        virtual_node_feat = self.vn_mlp_list[2](
+            global_add_pool(x, batch_index) + virtual_node_feat
+        )
+
+        # ========================================
+        # C. Extract boron atom features + fuse solvent + ML global features
+        # ========================================
+        b_features = x[mask_b]
         b_batch_idx = batch_index[mask_b]
-        
-        # 2. 根据索引，将对应的溶剂特征“广播”给 B 原子
-        # solvent_x: [Batch_Size, 1024] -> b_solvent_features: [Num_B_Atoms, 1024]
-        b_solvent_features = solvent_x[b_batch_idx]
-        
-        # 3. 拼接 (Concatenate)
-        combined = torch.cat([b_features, b_solvent_features], dim=1)
-        
-        # --- E. MLP 预测 ---
-        out = self.mlp(combined)
-        
-        return out.squeeze(-1) # 压缩维度，输出 [Num_B_Atoms]
+
+        # Get solvent features
+        solvent_features = self.solvent_embedding(solvent_ids)  # [batch_size, solvent_dim]
+
+        # Ensure solvent_features is 2D (handles batch_size=1 case)
+        if solvent_features.dim() == 1:
+            solvent_features = solvent_features.unsqueeze(0)  # [1, solvent_dim]
+
+        b_solvent_features = solvent_features[b_batch_idx]      # [num_b_atoms, solvent_dim]
+
+        # Fuse ML global features (Strategy A: concatenation at prediction head)
+        if self.ml_encoder is not None and ml_global_features is not None:
+            ml_encoded = self.ml_encoder(ml_global_features)    # [batch_size, ml_hidden_dim]
+            if ml_encoded.dim() == 1:
+                ml_encoded = ml_encoded.unsqueeze(0)
+            b_ml_features = ml_encoded[b_batch_idx]             # [num_b_atoms, ml_hidden_dim]
+            combined = torch.cat([b_features, b_solvent_features, b_ml_features], dim=1)
+        else:
+            combined = torch.cat([b_features, b_solvent_features], dim=1)
+
+        # ========================================
+        # D. MLP prediction
+        # ========================================
+        out = self.mlp(combined).squeeze(-1)
+
+        if return_attention:
+            return out, attention_weights
+        else:
+            return out

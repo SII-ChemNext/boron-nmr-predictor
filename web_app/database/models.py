@@ -1,4 +1,4 @@
-"""数据库模型 - 使用 SQLite"""
+"""Database models - using SQLite"""
 
 import sqlite3
 import json
@@ -8,18 +8,18 @@ import os
 
 def init_db(db_path):
     """
-    初始化数据库，创建必要的表
+    Initialize the database and create required tables.
 
     Args:
-        db_path (str): 数据库文件路径
+        db_path (str): path to the database file
     """
-    # 创建目录如果不存在
+    # Create directory if it does not exist
     os.makedirs(os.path.dirname(db_path), exist_ok=True)
 
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
-    # 创建预测结果表
+    # Create predictions table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS predictions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -34,32 +34,32 @@ def init_db(db_path):
 
     conn.commit()
     conn.close()
-    print(f"✓ 数据库初始化完成: {db_path}")
+    print(f"✓ Database initialized: {db_path}")
 
 
 def save_prediction(db_path, mol_smiles, solvent_name, predictions, image_path='', notes=''):
     """
-    保存预测记录到数据库
+    Save a prediction record to the database.
 
     Args:
-        db_path (str): 数据库文件路径
-        mol_smiles (str): 分子 SMILES
-        solvent_name (str): 溶剂名称
-        predictions (list): 预测结果列表 [{'atom_index': int, 'element': str, 'ppm': float}, ...]
-        image_path (str): 分子图片路径
-        notes (str): 用户备注
+        db_path (str): path to the database file
+        mol_smiles (str): molecule SMILES
+        solvent_name (str): solvent name
+        predictions (list): list of prediction results [{'atom_index': int, 'element': str, 'ppm': float}, ...]
+        image_path (str): path to the molecule image
+        notes (str): user notes
 
     Returns:
-        int: 插入的记录 ID
+        int: ID of the inserted record
 
     Raises:
-        Exception: 数据库操作失败
+        Exception: if database operation fails
     """
     try:
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
 
-        # 转换预测结果为 JSON 字符串
+        # Serialize prediction results to JSON string
         predictions_json = json.dumps(predictions, ensure_ascii=False)
 
         cursor.execute('''
@@ -74,22 +74,22 @@ def save_prediction(db_path, mol_smiles, solvent_name, predictions, image_path='
         return prediction_id
 
     except Exception as e:
-        raise Exception(f"保存预测记录失败: {e}")
+        raise Exception(f"Failed to save prediction record: {e}")
 
 
 def get_history(db_path, limit=50):
     """
-    从数据库获取历史记录
+    Retrieve prediction history from the database.
 
     Args:
-        db_path (str): 数据库文件路径
-        limit (int): 返回的最大记录数
+        db_path (str): path to the database file
+        limit (int): maximum number of records to return
 
     Returns:
-        list: 预测记录列表
+        list: list of prediction records
 
     Raises:
-        Exception: 数据库操作失败
+        Exception: if database operation fails
     """
     try:
         conn = sqlite3.connect(db_path)
@@ -120,22 +120,22 @@ def get_history(db_path, limit=50):
         return records
 
     except Exception as e:
-        raise Exception(f"获取历史记录失败: {e}")
+        raise Exception(f"Failed to retrieve history: {e}")
 
 
 def get_prediction_by_id(db_path, prediction_id):
     """
-    根据 ID 获取单个预测记录
+    Retrieve a single prediction record by ID.
 
     Args:
-        db_path (str): 数据库文件路径
-        prediction_id (int): 预测记录 ID
+        db_path (str): path to the database file
+        prediction_id (int): prediction record ID
 
     Returns:
-        dict: 预测记录
+        dict: prediction record
 
     Raises:
-        Exception: 记录不存在或数据库操作失败
+        Exception: if record does not exist or database operation fails
     """
     try:
         conn = sqlite3.connect(db_path)
@@ -151,7 +151,7 @@ def get_prediction_by_id(db_path, prediction_id):
         conn.close()
 
         if row is None:
-            raise Exception(f"预测记录不存在: ID {prediction_id}")
+            raise Exception(f"Prediction record not found: ID {prediction_id}")
 
         return {
             'id': row['id'],
@@ -164,22 +164,22 @@ def get_prediction_by_id(db_path, prediction_id):
         }
 
     except Exception as e:
-        raise Exception(f"获取预测记录失败: {e}")
+        raise Exception(f"Failed to retrieve prediction record: {e}")
 
 
 def delete_prediction(db_path, prediction_id):
     """
-    删除预测记录
+    Delete a prediction record.
 
     Args:
-        db_path (str): 数据库文件路径
-        prediction_id (int): 预测记录 ID
+        db_path (str): path to the database file
+        prediction_id (int): prediction record ID
 
     Returns:
-        bool: 删除成功返回 True
+        bool: True if deletion was successful
 
     Raises:
-        Exception: 数据库操作失败
+        Exception: if database operation fails
     """
     try:
         conn = sqlite3.connect(db_path)
@@ -192,22 +192,22 @@ def delete_prediction(db_path, prediction_id):
         return True
 
     except Exception as e:
-        raise Exception(f"删除预测记录失败: {e}")
+        raise Exception(f"Failed to delete prediction record: {e}")
 
 
 def clear_old_predictions(db_path, days=30):
     """
-    清理过期的预测记录
+    Remove expired prediction records.
 
     Args:
-        db_path (str): 数据库文件路径
-        days (int): 保留多少天的记录
+        db_path (str): path to the database file
+        days (int): number of days of records to retain
 
     Returns:
-        int: 删除的记录数
+        int: number of deleted records
 
     Raises:
-        Exception: 数据库操作失败
+        Exception: if database operation fails
     """
     try:
         conn = sqlite3.connect(db_path)
@@ -225,4 +225,4 @@ def clear_old_predictions(db_path, days=30):
         return deleted_count
 
     except Exception as e:
-        raise Exception(f"清理过期记录失败: {e}")
+        raise Exception(f"Failed to clear expired records: {e}")

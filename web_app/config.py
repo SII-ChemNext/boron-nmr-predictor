@@ -2,28 +2,28 @@ import os
 import torch
 
 class Config:
-    """应用配置"""
+    """Application configuration"""
 
-    # 基础路径
+    # Base path
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-    # 模型配置
+    # Model configuration
     MODEL_DIR = os.path.join(BASE_DIR, 'models')
     DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-    # 数据库配置
+    # Database configuration
     DATABASE_DIR = os.path.join(BASE_DIR, 'database')
     DATABASE_PATH = os.path.join(DATABASE_DIR, 'predictions.db')
 
-    # 静态文件路径
+    # Static file path
     IMAGE_DIR = os.path.join(BASE_DIR, 'static', 'img')
 
-    # Flask 配置
+    # Flask configuration
     DEBUG = True
     SECRET_KEY = 'boron-nmr-prediction-web-app-secret-key-2025'
     JSON_SORT_KEYS = False
 
-    # 支持的溶剂列表（名称 -> 氘代 SMILES）
+    # Supported solvents (name -> deuterated SMILES)
     SUPPORTED_SOLVENTS = {
         'CDCl3': '[2H]C(Cl)(Cl)Cl',
         'C6D6': '[2H]c1c([2H])c([2H])c([2H])c([2H])c1[2H]',
@@ -37,40 +37,42 @@ class Config:
         'D2O': '[2H]O[2H]'
     }
 
-    # 模型参数（必须与训练时一致）
+    # Model hyperparameters (must match training configuration - V3 model)
     HIDDEN_DIM = 256
-    DROPOUT = 0.0472
-    SOLVENT_FP_SIZE = 1024
+    DROPOUT = 0.012558398103042557
+    SOLVENT_DIM = 32
+    ML_FEATURE_DIM = 20
+    ML_HIDDEN_DIM = 64
 
-    # 文件上传限制
+    # File upload limit
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB
 
-    # 历史记录查询限制
+    # History query limit
     HISTORY_LIMIT = 50
 
 
 class DevelopmentConfig(Config):
-    """开发环境配置"""
+    """Development environment configuration"""
     DEBUG = True
     TESTING = False
 
 
 class ProductionConfig(Config):
-    """生产环境配置"""
+    """Production environment configuration"""
     DEBUG = False
     TESTING = False
 
 
 class TestingConfig(Config):
-    """测试环境配置"""
+    """Testing environment configuration"""
     TESTING = True
     DEBUG = True
-    DATABASE_PATH = ':memory:'  # 使用内存数据库进行测试
+    DATABASE_PATH = ':memory:'  # Use in-memory database for testing
 
 
-# 环境变量选择
+# Select configuration based on environment variable
 def get_config():
-    """根据环境变量选择配置"""
+    """Select configuration based on environment variable"""
     env = os.getenv('FLASK_ENV', 'development')
 
     if env == 'production':

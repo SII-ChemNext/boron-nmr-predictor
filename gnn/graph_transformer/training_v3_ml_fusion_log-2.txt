@@ -1,0 +1,138 @@
+================================================================================
+ EXPERIMENT REPORT: BoronNMRNet_V3_ML_Fusion
+================================================================================
+
+1. Model Identity
+----------------------------------------
+   Model Name      : BoronNMRNet_V3_ML_Fusion
+   Script Run Time :
+   Description     : 5-Fold CV with Virtual Node + Solvent Embedding + ML Feature Fusion
+
+2. Data Information
+----------------------------------------
+   Dataset File    : processed_boron_dataset_v3.pt
+   Total Samples   : 5490
+   Dev Set (80%)   : 4392 (Used for 5-Fold CV)
+   Test Set (20%)  : 1098  (Hold-out for Final Evaluation)
+   Random Seed     : 42
+
+3. Configuration
+----------------------------------------
+   Learning Rate   : 0.0002779315932228636
+   Batch Size      : 16
+   Hidden Dim      : 256
+   Dropout         : 0.012558398103042557
+   Solvent Dim     : 32
+   ML Feature Dim  : 20
+   ML Hidden Dim   : 64
+   Max Epochs      : 150
+   Patience        : 10
+   Device          : cuda
+================================================================================
+
+4. Training Process & Results
+------------------------------------------------------------
+
+>>> Fold 1 / 5
+   Epoch 010 | Loss: 2.5134 | Val MAE: 4.0382
+   Epoch 020 | Loss: 1.9188 | Val MAE: 3.1674
+   Epoch 030 | Loss: 1.4911 | Val MAE: 3.1817
+   Epoch 040 | Loss: 1.3369 | Val MAE: 3.1509
+   Epoch 050 | Loss: 1.1891 | Val MAE: 3.0319
+   Epoch 060 | Loss: 1.0255 | Val MAE: 2.8839
+   Epoch 070 | Loss: 1.0567 | Val MAE: 2.8647
+   Epoch 080 | Loss: 0.6955 | Val MAE: 2.9034
+   Epoch 090 | Loss: 0.6316 | Val MAE: 2.8169
+   Epoch 100 | Loss: 0.5611 | Val MAE: 2.7150
+   Epoch 110 | Loss: 0.5012 | Val MAE: 2.7320
+   Epoch 120 | Loss: 0.4331 | Val MAE: 2.7118
+   Epoch 130 | Loss: 0.4081 | Val MAE: 2.6969
+   Epoch 140 | Loss: 0.3957 | Val MAE: 2.7165
+   Epoch 150 | Loss: 0.3852 | Val MAE: 2.6965
+   [Fold 1 BEST] MAE: 2.6705 | RMSE: 7.0112 | R2: 0.9072
+
+>>> Fold 2 / 5
+   Epoch 010 | Loss: 2.7881 | Val MAE: 2.9428
+   Epoch 020 | Loss: 2.1488 | Val MAE: 2.5217
+   Epoch 030 | Loss: 1.8137 | Val MAE: 2.7040
+   Epoch 040 | Loss: 1.2142 | Val MAE: 2.2432
+   Epoch 050 | Loss: 0.9218 | Val MAE: 2.1022
+   Epoch 060 | Loss: 0.8357 | Val MAE: 2.1093
+   Epoch 070 | Loss: 0.7851 | Val MAE: 2.1185
+   Epoch 080 | Loss: 0.7511 | Val MAE: 2.0357
+   Epoch 090 | Loss: 0.6441 | Val MAE: 2.0572
+   Epoch 100 | Loss: 0.6157 | Val MAE: 2.0437
+   Epoch 110 | Loss: 0.5784 | Val MAE: 2.0065
+   Epoch 120 | Loss: 0.5387 | Val MAE: 2.0285
+   Epoch 130 | Loss: 0.5141 | Val MAE: 1.9956
+   Epoch 140 | Loss: 0.5218 | Val MAE: 1.9982
+   Epoch 150 | Loss: 0.5130 | Val MAE: 1.9901
+   [Fold 2 BEST] MAE: 1.9603 | RMSE: 4.6686 | R2: 0.9586
+
+>>> Fold 3 / 5
+   Epoch 010 | Loss: 2.4953 | Val MAE: 3.6204
+   Epoch 020 | Loss: 1.8884 | Val MAE: 3.1265
+   Epoch 030 | Loss: 1.5418 | Val MAE: 3.1297
+   Epoch 040 | Loss: 1.2960 | Val MAE: 2.9345
+   Epoch 050 | Loss: 1.2368 | Val MAE: 2.8465
+   Epoch 060 | Loss: 1.0869 | Val MAE: 2.7534
+   Epoch 070 | Loss: 0.9476 | Val MAE: 3.2687
+   Epoch 080 | Loss: 0.6804 | Val MAE: 2.5565
+   Epoch 090 | Loss: 0.6135 | Val MAE: 2.5682
+   Epoch 100 | Loss: 0.5016 | Val MAE: 2.5245
+   Epoch 110 | Loss: 0.4713 | Val MAE: 2.5866
+   Epoch 120 | Loss: 0.4175 | Val MAE: 2.5235
+   Epoch 130 | Loss: 0.4087 | Val MAE: 2.5013
+   Epoch 140 | Loss: 0.3751 | Val MAE: 2.5153
+   Epoch 150 | Loss: 0.3530 | Val MAE: 2.5045
+   [Fold 3 BEST] MAE: 2.4779 | RMSE: 6.7195 | R2: 0.9135
+
+>>> Fold 4 / 5
+   Epoch 010 | Loss: 2.5773 | Val MAE: 3.4711
+   Epoch 020 | Loss: 1.8794 | Val MAE: 2.9010
+   Epoch 030 | Loss: 1.6615 | Val MAE: 2.9284
+   Epoch 040 | Loss: 1.3930 | Val MAE: 3.1135
+   Epoch 050 | Loss: 0.9668 | Val MAE: 2.7526
+   Epoch 060 | Loss: 0.8644 | Val MAE: 2.6875
+   Epoch 070 | Loss: 0.7010 | Val MAE: 2.6267
+   Epoch 080 | Loss: 0.6344 | Val MAE: 2.5882
+   Epoch 090 | Loss: 0.5714 | Val MAE: 2.5462
+   Epoch 100 | Loss: 0.5399 | Val MAE: 2.5988
+   Epoch 110 | Loss: 0.5188 | Val MAE: 2.5718
+   Epoch 120 | Loss: 0.4972 | Val MAE: 2.5693
+   Epoch 130 | Loss: 0.4761 | Val MAE: 2.5602
+   Epoch 140 | Loss: 0.4661 | Val MAE: 2.5607
+   Epoch 150 | Loss: 0.4764 | Val MAE: 2.5503
+   [Fold 4 BEST] MAE: 2.5462 | RMSE: 6.4718 | R2: 0.9170
+
+>>> Fold 5 / 5
+   Epoch 010 | Loss: 2.5375 | Val MAE: 3.3989
+   Epoch 020 | Loss: 1.9814 | Val MAE: 3.5470
+   Epoch 030 | Loss: 1.5993 | Val MAE: 3.0546
+   Epoch 040 | Loss: 1.4073 | Val MAE: 3.0431
+   Epoch 050 | Loss: 1.1968 | Val MAE: 2.8230
+   Epoch 060 | Loss: 1.0969 | Val MAE: 2.7863
+   Epoch 070 | Loss: 0.8155 | Val MAE: 2.7178
+   Epoch 080 | Loss: 0.6131 | Val MAE: 2.7182
+   Epoch 090 | Loss: 0.5786 | Val MAE: 2.6994
+   Epoch 100 | Loss: 0.5017 | Val MAE: 2.6092
+   Epoch 110 | Loss: 0.5021 | Val MAE: 2.6184
+   Epoch 120 | Loss: 0.4753 | Val MAE: 2.6619
+   Epoch 130 | Loss: 0.4458 | Val MAE: 2.6251
+   Epoch 140 | Loss: 0.4303 | Val MAE: 2.6355
+   Epoch 150 | Loss: 0.4460 | Val MAE: 2.6257
+   [Fold 5 BEST] MAE: 2.6082 | RMSE: 6.9614 | R2: 0.9210
+
+============================================================
+Cross-Validation Summary (Average of 5 folds):
+   Avg MAE  : 2.4526 ± 0.2543
+   Avg RMSE : 6.3665 ± 0.8704
+   Avg R2   : 0.9234 ± 0.0181
+============================================================
+
+>>> Final Ensemble Evaluation (on Hold-out Test Set)...
+[FINAL ENSEMBLE RESULT]
+   MAE  : 1.9792
+   RMSE : 5.2167
+   R2   : 0.9463
+================================================================================
