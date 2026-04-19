@@ -1,4 +1,4 @@
-# An Interpretable Hybrid AI Framework for Decoding Solvent-Dependent <sup>11</sup>B NMR Chemical Shifts
+# Resolving Chemically Inequivalent <sup>11</sup>B NMR Sites via Interpretable Hybrid Machine Learning
 
 This repository provides the code and data for predicting <sup>11</sup>B NMR chemical shifts using classical machine learning and graph neural networks. The framework combines a Graph Transformer with virtual node, learnable solvent embeddings, and SHAP-guided ML feature fusion, trained on a dataset of **5,490** boron-containing compounds across **10 deuterated solvents**. A Flask web application with Ketcher molecule editor is included for interactive prediction.
 
