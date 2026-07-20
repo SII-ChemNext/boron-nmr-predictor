@@ -1,6 +1,8 @@
 # GNN Models for ¹¹B NMR Chemical Shift Prediction
 
-Graph Neural Network models for predicting ¹¹B NMR chemical shifts, based on a Graph Transformer architecture with learnable solvent embeddings and ML feature fusion.
+Graph neural network models for predicting ¹¹B NMR chemical shifts, including
+2D message-passing baselines and four 3D equivariant architectures. Both the
+full models and the ablation without the 20 prior ML features are provided.
 
 ---
 
@@ -25,14 +27,16 @@ gnn/
 │   ├── models/model_v2.py
 │   └── train_kfold_v2.py
 │
-├── gnn_comparison/              # Benchmark: GCN, GATv2, GINE, NNConv, PNA (with ML features)
-│   ├── models/
-│   ├── train_gcn/gatv2/gine/nnconv/pna.py
+├── gnn_comparison/              # Benchmarks with prior ML features
+│   ├── models/                  # 2D models + EGNN, PaiNN, MACE, EquiformerV2
+│   ├── build_equivariant_dataset.py
+│   ├── equivariant_training.py
+│   ├── train_*.py               # One training entry point per architecture
 │   └── GNN_Comparison_Results.md
 │
-├── gnn_comparison_no_ml/        # Benchmark: same architectures without ML features
-│   ├── models/
-│   ├── train_gcn/gatv2/gine/nnconv/pna.py
+├── gnn_comparison_no_ml/        # Same benchmarks without prior ML features
+│   ├── models/                  # Includes four no-ML equivariant wrappers
+│   ├── train_*.py
 │   └── GNN_Results_Summary.md
 │
 └── requirements.txt
@@ -70,6 +74,21 @@ python build_dataset_v3.py
 
 > `features.py` and `ml_features.py` are feature definition modules used internally by the above scripts and the training pipeline — they are not meant to be run directly.
 
+The four equivariant models require a separate 3D dataset. This command reads
+the same `graph_transformer/data.csv`, reproduces the seed-42 4392/1098 split,
+generates one conformer per molecule, and writes ignored `.pt` files under
+`gnn_comparison/processed_equivariant/`:
+
+```bash
+cd gnn_comparison
+python build_equivariant_dataset.py
+```
+
+The builder uses RDKit ETKDGv3 with deterministic seeds, MMFF94 optimization
+and UFF fallback. It centers each molecule and constructs directed spatial
+edges with a 5.0 Å cutoff. The training split alone is used to fit the scaler
+for the 20 prior ML features.
+
 ---
 
 ### Predict ¹¹B NMR chemical shifts for a new molecule
@@ -103,3 +122,30 @@ python tune_cv_v3.py
 cd gnn_comparison
 python train_gatv2.py   # or train_gcn.py / train_gine.py / train_nnconv.py / train_pna.py
 ```
+
+After preparing the 3D dataset, train an equivariant model with prior ML
+features on one GPU:
+
+```bash
+cd gnn_comparison
+python train_egnn.py --device cuda:0
+python train_painn.py --device cuda:0
+python train_mace.py --device cuda:0
+python train_equiformer_v2.py --device cuda:0
+```
+
+Run the corresponding no-prior-ML ablations from the sibling directory. These
+classes do not access `ml_global_features`, although the shared graph files
+retain that tensor so the split and geometry are identical:
+
+```bash
+cd gnn_comparison_no_ml
+python train_egnn.py --device cuda:0
+python train_painn.py --device cuda:0
+python train_mace.py --device cuda:0
+python train_equiformer_v2.py --device cuda:0
+```
+
+Every training entry point performs five folds sequentially and rejects an
+existing output run directory. Use a distinct `--run-name` for each rerun to
+avoid overwriting results.
